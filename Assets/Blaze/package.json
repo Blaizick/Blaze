@@ -1,0 +1,15 @@
+{
+  "name": "com.blaizi.blaze",
+  "displayName": "Blaze",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "unityRelease": "15f1",
+  "changelogUrl": "https://example.com/changelog.html",
+  "documentationUrl": "https://example.com/",
+  "licensesUrl": "https://example.com/licensing.html",
+  "dependencies": {
+    "com.mackysoft.serializereference-extensions": "1.7.0",
+    "com.unity.textmeshpro": "3.0.9",
+    "com.unity.inputsystem": "1.19.0"
+  }
+}
