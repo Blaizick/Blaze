@@ -17,14 +17,6 @@
       "dependencies": {},
       "hash": "5fadcb6564f0c6e988641e2e4a4aba4b6b1caafe"
     },
-    "com.novikovkir09.blaze": {
-      "version": "file:com.novikovkir09.blaze",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.test-framework": "1.6.0"
-      }
-    },
     "com.unity.ext.nunit": {
       "version": "2.0.5",
       "depth": 2,
