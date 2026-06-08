@@ -1,0 +1,14 @@
+{
+    "name": "Novikovkir09.Blaze.Editor.Tests",
+    "references": [
+        "Novikovkir09.Blaze.Editor",
+        "Novikovkir09.Blaze"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

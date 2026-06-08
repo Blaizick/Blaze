@@ -1,11 +1,29 @@
 {
   "dependencies": {
+    "com.blaizi.blaze": {
+      "version": "file:com.blaizi.blaze",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.mackysoft.serializereference-extensions": "1.7.0",
+        "com.unity.textmeshpro": "3.0.9",
+        "com.unity.inputsystem": "1.19.0"
+      }
+    },
     "com.mackysoft.serializereference-extensions": {
       "version": "https://github.com/mackysoft/Unity-SerializeReferenceExtensions.git?path=Assets/MackySoft/MackySoft.SerializeReferenceExtensions",
       "depth": 0,
       "source": "git",
       "dependencies": {},
       "hash": "5fadcb6564f0c6e988641e2e4a4aba4b6b1caafe"
+    },
+    "com.novikovkir09.blaze": {
+      "version": "file:com.novikovkir09.blaze",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.test-framework": "1.6.0"
+      }
     },
     "com.unity.ext.nunit": {
       "version": "2.0.5",
@@ -39,6 +57,14 @@
         "com.unity.ext.nunit": "2.0.3",
         "com.unity.modules.imgui": "1.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
+      }
+    },
+    "com.unity.textmeshpro": {
+      "version": "5.0.0",
+      "depth": 1,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.ugui": "2.0.0"
       }
     },
     "com.unity.ugui": {

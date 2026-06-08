@@ -1,0 +1,10 @@
+{
+    "name": "Novikovkir09.Blaze.Editor",
+    "references": [
+      "Novikovkir09.Blaze"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
