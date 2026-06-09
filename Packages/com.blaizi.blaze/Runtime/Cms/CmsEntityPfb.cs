@@ -79,7 +79,7 @@ namespace Blaze.Runtime.Cms
         
         public static void LoadAll(string root)
         {
-            s_Entities.Clear();
+            s_Entities = new();
             Resources.
                 LoadAll<CmsEntityPfb>(root).
                 Select(i => i.AsCmsEntity()).
