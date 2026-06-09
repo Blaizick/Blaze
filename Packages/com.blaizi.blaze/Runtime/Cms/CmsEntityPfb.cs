@@ -86,5 +86,10 @@ namespace Blaze.Runtime.Cms
                 ToList().
                 ForEach(i => s_Entities[i.Id] = i);
         }
+
+        public static CmsEntity GetEntity(string id)
+        {
+            return s_Entities.TryGetValue(id, out var i) ? i : null;
+        }
     }
 }
