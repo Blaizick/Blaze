@@ -14,18 +14,57 @@ namespace Blaze.Runtime.Cms
     
         public CmsEntity AsCmsEntity()
         {
-            return new CmsEntity()
-            {
-                id = id,
-                components = new(components),
-            };
+            return new CmsEntity(id, new(components));
         }
     }
 
     public class CmsEntity
     {
-        public string id;
-        public List<CmsComponent> components = new();
+        private string m_Id;
+        private List<CmsComponent> m_Components = new();
+    
+        public string Id => m_Id;
+        public IReadOnlyList<CmsComponent> Components => m_Components.AsReadOnly();
+
+        public CmsEntity(string id, List<CmsComponent> components)
+        {
+            m_Id = id;
+            m_Components = components;
+        }
+
+        public CmsComponent GetComponent(Type type)
+        {
+            int id = m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType()));
+            if (id > -1)
+            {
+                return m_Components[id];
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public bool HasComponent(Type type)
+        {
+            return m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType())) > -1;
+        }
+        public List<CmsComponent> GetAllComponentsOfType(Type type)
+        {
+            return m_Components.Where(i => type.IsAssignableFrom(i.GetType())).ToList();
+        }
+
+        public T GetComponent<T>() where T : CmsComponent
+        {
+            return GetComponent(typeof(T)) as T;
+        }
+        public bool HasComponent<T>() where T : CmsComponent
+        {
+            return HasComponent(typeof(T));
+        }
+        public List<T> GetAllComponentsOfType<T>() where T : CmsComponent
+        {
+            return GetAllComponentsOfType(typeof(T)).Cast<T>().ToList();
+        }
     }
 
     [Serializable]
@@ -45,7 +84,7 @@ namespace Blaze.Runtime.Cms
                 LoadAll<CmsEntityPfb>(root).
                 Select(i => i.AsCmsEntity()).
                 ToList().
-                ForEach(i => s_Entities[i.id] = i);
+                ForEach(i => s_Entities[i.Id] = i);
         }
     }
 }
