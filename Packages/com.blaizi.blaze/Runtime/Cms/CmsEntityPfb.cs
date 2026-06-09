@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace Blaze.Runtime.Cms
@@ -15,6 +17,11 @@ namespace Blaze.Runtime.Cms
         public CmsEntity AsCmsEntity()
         {
             return new CmsEntity(id, new(components));
+        }
+
+        public CmsEntity GetCmsEntity()
+        {
+            return Cms.GetEntity(id);
         }
     }
 
@@ -80,11 +87,23 @@ namespace Blaze.Runtime.Cms
         public static void LoadAll(string root)
         {
             s_Entities = new();
-            Resources.
+            var list = Resources.
                 LoadAll<CmsEntityPfb>(root).
                 Select(i => i.AsCmsEntity()).
-                ToList().
-                ForEach(i => s_Entities[i.Id] = i);
+                ToList();
+            StringBuilder sb = new();
+            sb.Append($"Loaded {list.Count} entities: ");
+            for (int i = 0; i < list.Count; i++)
+            {
+                var ent = list[i];
+                s_Entities[ent.Id] = ent;
+                sb.Append(ent.Id);
+                if (i < list.Count - 1)
+                {
+                    sb.Append(", ");
+                }
+            }
+            Debug.Log(sb);
         }
 
         public static CmsEntity GetEntity(string id)
