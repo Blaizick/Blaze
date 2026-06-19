@@ -25,6 +25,37 @@ namespace Blaze.Runtime.Cms
         }
     }
 
+    public class CmsEntityBuilder
+    {
+        public string id;
+        public List<CmsComponent> components = new();
+
+        public CmsEntity CmsEntity => new CmsEntity(id, new(components));
+
+        public CmsEntityBuilder WithId(string id)
+        {
+            this.id = id;
+            return this; 
+        }
+
+        public CmsEntityBuilder WithComponent(CmsComponent component)
+        {
+            components.Add(component);
+            return this;
+        }
+
+        public CmsEntityBuilder WithComponents(List<CmsComponent> components)
+        {
+            this.components = new(components);
+            return this;
+        }
+
+        public void Register()
+        {
+            Cms.Push(CmsEntity);
+        }
+    }
+
     public class CmsEntity
     {
         private string m_Id;
@@ -33,10 +64,20 @@ namespace Blaze.Runtime.Cms
         public string Id => m_Id;
         public IReadOnlyList<CmsComponent> Components => m_Components.AsReadOnly();
 
+        public CmsEntity()
+        {
+            
+        }
+
         public CmsEntity(string id, List<CmsComponent> components)
         {
             m_Id = id;
             m_Components = components;
+        }
+
+        public static CmsEntityBuilder Create()
+        {
+            return new CmsEntityBuilder();
         }
 
         public CmsComponent GetComponent(Type type)
@@ -71,6 +112,31 @@ namespace Blaze.Runtime.Cms
         public List<T> GetAllComponentsOfType<T>() where T : CmsComponent
         {
             return GetAllComponentsOfType(typeof(T)).Cast<T>().ToList();
+        }
+
+        public bool TryGetComponent(Type type, out CmsComponent component)
+        {
+            int id = m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType()));
+            if (id < 0)
+            {
+                component = null;
+                return false;
+            }
+            component = m_Components[id];
+            return true;
+        }
+
+        public bool TryGetComponent<T>(out T component) where T : CmsComponent
+        {
+            var type = typeof(T);
+            int id = m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType()));
+            if (id < 0)
+            {
+                component = null;
+                return false;
+            }
+            component = (T)m_Components[id];
+            return true;
         }
     }
 
@@ -109,6 +175,16 @@ namespace Blaze.Runtime.Cms
         public static CmsEntity GetEntity(string id)
         {
             return s_Entities.TryGetValue(id, out var i) ? i : null;
+        }
+
+        public static void Clear()
+        {
+            s_Entities.Clear();
+        }
+
+        public static void Push(CmsEntity cmsEntity)
+        {
+            s_Entities[cmsEntity.Id] = cmsEntity;
         }
     }
 }
