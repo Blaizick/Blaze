@@ -149,7 +149,7 @@ namespace Blaze.Runtime.Cms
 
     public static class Cms
     {
-        private static Dictionary<string, CmsEntity> s_Entities;
+        private static Dictionary<string, CmsEntity> s_Entities = new();
         
         public static void LoadAll(string root)
         {
