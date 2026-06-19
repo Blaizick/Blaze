@@ -50,9 +50,10 @@ namespace Blaze.Runtime.Cms
             return this;
         }
 
-        public void Register()
+        public CmsEntityBuilder Register()
         {
             Cms.Push(CmsEntity);
+            return this;
         }
     }
 
