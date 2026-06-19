@@ -53,7 +53,15 @@ namespace Blaze
 
         public IEnumerator HideCoroutine()
         {
-            yield return canvasGroup.DOFade(0.0f, 0.5f).WaitForCompletion();
+            root.SetActive(true);
+            canvasGroup.alpha = 1.0f;
+            float t = 0.0f;
+            while (t < 1.0f)
+            {
+                canvasGroup.alpha = Mathf.Lerp(1.0f, 0.0f, t);
+                yield return null;
+            }
+            canvasGroup.alpha = 0.0f;
             root.SetActive(false);
         }
 
@@ -61,7 +69,13 @@ namespace Blaze
         {
             root.SetActive(true);
             canvasGroup.alpha = 0.0f;
-            yield return canvasGroup.DOFade(1.0f, 0.5f).WaitForCompletion();
+            float t = 0.0f;
+            while (t < 1.0f)
+            {
+                canvasGroup.alpha = Mathf.Lerp(0.0f, 1.0f, t);
+                yield return null;
+            }
+            canvasGroup.alpha = 1.0f;
         }
     }
 }
