@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Blaze
+namespace Blaze.Runtime.Ui
 {
     public class TextTypewriter : MonoBehaviour, IPointerClickHandler
     {

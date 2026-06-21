@@ -4,7 +4,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Blaze
+namespace Blaze.Runtime.Ui
 {
     public class TextScreen : MonoBehaviour
     {

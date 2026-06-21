@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace Blaze
+namespace Blaze.Runtime
 {
     public class ShadowTilemap : MonoBehaviour
     {

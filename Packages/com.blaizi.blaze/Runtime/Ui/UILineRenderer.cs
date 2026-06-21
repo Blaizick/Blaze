@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Blaze.Runtime
+namespace Blaze.Runtime.Ui
 {
     [RequireComponent(typeof(CanvasRenderer))]
     public class UILineRenderer : MaskableGraphic
