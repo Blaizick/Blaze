@@ -44,17 +44,21 @@ namespace Blaze.Runtime.Ui
 
         public void Raycast()
         {
-            PointerEventData data = new PointerEventData(EventSystem.current)
+            PointerEventData eventData = new PointerEventData(EventSystem.current)
             {
-                position = Mouse.current.position.ReadValue(),
+                position = Mouse.current.position.ReadValue()
             };
-            List<RaycastResult> result = new();
-            EventSystem.current.RaycastAll(data, result);
+            List<RaycastResult> raycastResults = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, raycastResults);
             TooltipTrigger trigger = null;
-            if (result.Count > 0)
+            if (raycastResults.Count > 0)
             {
-                result.First().gameObject.TryGetComponent(out trigger);
+                if (!raycastResults.First().gameObject.TryGetComponent(out trigger))
+                {
+                    trigger = raycastResults.First().gameObject.GetComponentInParent<TooltipTrigger>();
+                }
             }
+
             if (trigger)
             {
                 tooltip.title.text = trigger.title;
@@ -68,6 +72,7 @@ namespace Blaze.Runtime.Ui
             {
                 tooltip.Hide();
             }
+
             curTrigger = trigger;
         }
     }

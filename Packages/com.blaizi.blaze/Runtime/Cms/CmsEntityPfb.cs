@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
@@ -14,11 +14,13 @@ namespace Blaze.Runtime.Cms
         [SubclassSelector, SerializeReference]
         public List<CmsComponent> components = new();
     
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CmsEntity AsCmsEntity()
         {
             return new CmsEntity(id, new(components));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CmsEntity GetCmsEntity()
         {
             return Cms.GetEntity(id);
@@ -30,7 +32,13 @@ namespace Blaze.Runtime.Cms
         public string id;
         public List<CmsComponent> components = new();
 
-        public CmsEntity CmsEntity => new CmsEntity(id, new(components));
+        public CmsEntity CmsEntity
+        {
+            get
+            {
+                return new CmsEntity(id, new(components));
+            }
+        }
 
         public CmsEntityBuilder WithId(string id)
         {
@@ -61,7 +69,8 @@ namespace Blaze.Runtime.Cms
     {
         private string m_Id;
         private List<CmsComponent> m_Components = new();
-    
+        private Dictionary<Type, List<CmsComponent>> m_ComponentsCache = new();
+
         public string Id => m_Id;
         public IReadOnlyList<CmsComponent> Components => m_Components.AsReadOnly();
 
@@ -74,6 +83,23 @@ namespace Blaze.Runtime.Cms
         {
             m_Id = id;
             m_Components = components;
+            InvalidateComponentsCache();
+        }
+
+        public void InvalidateComponentsCache()
+        {
+            m_ComponentsCache.Clear();
+            foreach (var i in m_Components)
+            {
+                var type = i.GetType();
+                List<CmsComponent> list;
+                if (!m_ComponentsCache.TryGetValue(type, out list))
+                {
+                    list = new();
+                    m_ComponentsCache[type] = list;
+                }
+                list.Add(i);
+            }
         }
 
         public static CmsEntityBuilder Create()
@@ -81,63 +107,76 @@ namespace Blaze.Runtime.Cms
             return new CmsEntityBuilder();
         }
 
-        public CmsComponent GetComponent(Type type)
+        private List<CmsComponent> GetListForComponentOfType(Type type)
         {
-            int id = m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType()));
-            if (id > -1)
+            List<CmsComponent> list;
+            if (!m_ComponentsCache.TryGetValue(type, out list))
             {
-                return m_Components[id];
+                list = m_Components.Where(i => type.IsAssignableFrom(i.GetType())).ToList();
+                m_ComponentsCache[type] = list;
             }
-            else
-            {
-                return null;
-            }
-        }
-        public bool HasComponent(Type type)
-        {
-            return m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType())) > -1;
-        }
-        public List<CmsComponent> GetAllComponentsOfType(Type type)
-        {
-            return m_Components.Where(i => type.IsAssignableFrom(i.GetType())).ToList();
+            return list;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
+        public CmsComponent GetComponent(Type type)
+        {
+            var list = GetListForComponentOfType(type);
+            return list.Count == 0 ? null : list.First();
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
+        public bool HasComponent(Type type)
+        {
+            var list = GetListForComponentOfType(type);
+            return list.Count > 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
+        public List<CmsComponent> GetAllComponentsOfType(Type type)
+        {
+            return new(GetListForComponentOfType(type));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
         public T GetComponent<T>() where T : CmsComponent
         {
             return GetComponent(typeof(T)) as T;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
         public bool HasComponent<T>() where T : CmsComponent
         {
             return HasComponent(typeof(T));
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
         public List<T> GetAllComponentsOfType<T>() where T : CmsComponent
         {
             return GetAllComponentsOfType(typeof(T)).Cast<T>().ToList();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
         public bool TryGetComponent(Type type, out CmsComponent component)
         {
-            int id = m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType()));
-            if (id < 0)
+            var list = GetListForComponentOfType(type);
+            if (list.Count > 0)
             {
-                component = null;
-                return false;
+                component = list.First();
+                return true;
             }
-            component = m_Components[id];
-            return true;
+            component = null;
+            return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
         public bool TryGetComponent<T>(out T component) where T : CmsComponent
         {
             var type = typeof(T);
-            int id = m_Components.FindIndex(i => type.IsAssignableFrom(i.GetType()));
-            if (id < 0)
+            var list = GetListForComponentOfType(type);
+            if (list.Count > 0)
             {
-                component = null;
-                return false;
+                component = (T)list.First();
+                return true;
             }
-            component = (T)m_Components[id];
-            return true;
+            component = null;
+            return false;
         }
     }
 
@@ -173,16 +212,19 @@ namespace Blaze.Runtime.Cms
             Debug.Log(sb);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static CmsEntity GetEntity(string id)
         {
             return s_Entities.TryGetValue(id, out var i) ? i : null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Clear()
         {
             s_Entities.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Push(CmsEntity cmsEntity)
         {
             s_Entities[cmsEntity.Id] = cmsEntity;
