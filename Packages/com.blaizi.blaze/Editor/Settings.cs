@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 using System.IO;
 using Blaze.Editor.Cms;
 using UnityEditor;
@@ -42,3 +44,5 @@ namespace Blaze.Editor
         }
     }
 }
+
+#endif
