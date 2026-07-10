@@ -7,7 +7,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using Blaze.Runtime.Cms;
-using UnityEditor.SearchService;
 using System;
 
 namespace Blaze.Editor.Cms
@@ -155,20 +154,25 @@ namespace Blaze.Editor.Cms
                 foreach (var j in strings)
                 {
                     sb.Append($"public partial class {j}{"{"}");
-                    var tmp2 = path.Substring(0, path.IndexOf(j) + j.Length);
-                    if (!tmp.Contains(tmp2))
+                    var dirPath = path.Substring(0, path.IndexOf(j) + j.Length);
+                    if (!tmp.Contains(dirPath))
                     {
-                        var guids2 = AssetDatabase.FindAssets("t:CmsEntityPfb", new[]{tmp2});
-                        sb.Append("public static List<CmsEntity> All => new(){");
+                        var guids2 = AssetDatabase.FindAssets("t:CmsEntityPfb", new[]{dirPath});
+                        StringBuilder sb2 = new();
                         foreach (var k in guids2)
                         {
                             var path2 = AssetDatabase.GUIDToAssetPath(k);
                             CmsEntityPfb cmsEntityPfb2 = AssetDatabase.LoadAssetAtPath<CmsEntityPfb>(path2);
-                            sb.Append($"Cms.GetEntity(\"{cmsEntityPfb2.id}\"),");
+                            sb2.Append($"Cms.GetEntity(\"{cmsEntityPfb2.id}\"),");
                         }
+                        sb.Append("public static List<CmsEntity> All => new(){");
+                        sb.Append(sb2);
                         sb.Append("};");
+                        sb.Append("private static List<CmsEntity> s_ReadOnlyAll = new() {");
+                        sb.Append(sb2);
+                        sb.Append("}; public static IReadOnlyList<CmsEntity> ReadOnlyAll => s_ReadOnlyAll.AsReadOnly();");
 
-                        tmp.Add(tmp2);
+                        tmp.Add(dirPath);
                     }
                 }
                 CmsEntityPfb cmsEntityPfb = AssetDatabase.LoadAssetAtPath<CmsEntityPfb>(path); 

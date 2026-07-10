@@ -1,32 +1,66 @@
-using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Blaze.Runtime.Ui
 {
-    public class TextTypewriter : MonoBehaviour, IPointerClickHandler
+    public class TextTypewriter : MonoBehaviour, IPointerClickHandler, IEventSystemHandler
     {
-        public TMP_Text targetText; 
+        public TMP_Text targetText;
 
-        public float charsPerSec = 20.0f;
+        public float charsPerSec = 20f;
 
-        public Coroutine writeCoroutine = null; 
+        public Coroutine writeCoroutine;
+        public Coroutine coroutine;
+        private string m_WritingText;
+        private bool m_InterruptRequested;
 
-        [NonSerialized] public string writingText;
-        [NonSerialized] public bool skipRequested = false;
+        public bool skipOnClick;
 
-        [NonSerialized] public bool skipOnClick = false;
-        [NonSerialized] public bool clicked = false;
+        private bool m_Clicked;
+        private int m_CurCharId;
+        private bool m_Writing;
+        private bool m_WaitingForClick;
+        private float m_WaitForClickStartTime;
+        
+        public bool Writing => m_Writing;
+        public bool WaitingForClick => m_WaitingForClick;
+        public float WaitingForClickTime => Time.time - m_WaitForClickStartTime;
+
+        public string Text
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                if (m_Writing)
+                {
+                    return m_WritingText.Substring(m_CurCharId);
+                }
+                return m_WritingText;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                if (m_Writing)
+                {
+                    Interrupt();
+                }
+                targetText.text = value;
+            }
+        }
 
         public IEnumerator WaitForClick()
         {
-            clicked = false;
-            while (!clicked)
+            m_WaitForClickStartTime = Time.time;
+            m_WaitingForClick = true;
+            m_Clicked = false;
+            while (!m_Clicked)
             {
                 yield return null;
             }
+            m_WaitingForClick = false;
         }
 
         public Coroutine WriteCoroutine(string text)
@@ -35,41 +69,57 @@ namespace Blaze.Runtime.Ui
             {
                 StopCoroutine(writeCoroutine);
             }
+
             writeCoroutine = StartCoroutine(_WriteCoroutine(text));
             return writeCoroutine;
         }
-        public IEnumerator _WriteCoroutine(string text)
+
+        private IEnumerator _WriteCoroutine(string text)
         {
-            skipRequested = false;
-            writingText = text;
+            m_InterruptRequested = false;
+            m_WritingText = text;
             targetText.text = text;
             int c = 0;
             while (c < text.Length)
             {
-                if (skipRequested)
+                if (m_InterruptRequested)
                 {
-                    skipRequested = false;
-                    yield break;
+                    m_InterruptRequested = false;
+                    break;
                 }
-                targetText.maxVisibleCharacters = ++c;           
-                yield return new WaitForSeconds(1.0f / charsPerSec);         
+
+                c = (targetText.maxVisibleCharacters = c + 1);
+                yield return new WaitForSeconds(1f / charsPerSec);
             }
         }
 
         public void Skip()
         {
+            Interrupt();
+        }
+
+
+        public void Interrupt()
+        {
             if (writeCoroutine != null)
             {
-                targetText.text = writingText;
+                if (m_WaitingForClick)
+                {
+                    m_Clicked = true;
+                }
+                m_Writing = false;
+                coroutine = null;
+                m_WaitingForClick = false;
+                targetText.text = m_WritingText;
                 targetText.maxVisibleCharacters = int.MaxValue;
-                skipRequested = true;
+                m_InterruptRequested = true;
                 writeCoroutine = null;
             }
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            clicked = true;
+            m_Clicked = true;
             if (skipOnClick)
             {
                 Skip();

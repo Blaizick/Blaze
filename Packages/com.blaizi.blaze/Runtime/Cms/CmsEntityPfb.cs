@@ -5,25 +5,102 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Blaze.Runtime.Cms
 {
     [CreateAssetMenu(fileName = "NewCmsEntity", menuName = "Cms/CmsEntity", order = 1)]
     public class CmsEntityPfb : ScriptableObject
     {
         public string id;
-        [SubclassSelector, SerializeReference]
+        [SerializeReference]
+        public CmsEntityDefiner definer = null;
+        [SerializeReference, SubclassSelector]
         public List<CmsComponent> components = new();
-    
+        [SerializeReference]
+        public List<CmsComponent> definedComponents = new();
+
+        public string DefinerTypeFullName => definer == null ? string.Empty : definer.GetType().FullName;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CmsEntity AsCmsEntity()
         {
-            return new CmsEntity(id, new(components));
+            List<CmsComponent> allComponents = new();
+            allComponents.AddRange(components);
+            allComponents.AddRange(definedComponents);
+            return new CmsEntity(id, new(allComponents));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CmsEntity GetCmsEntity()
         {
             return Cms.GetEntity(id);
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsCmsComponentDefined(CmsComponent component)
+        {
+            return definedComponents.Contains(component);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetDefiner(CmsEntityDefiner definer)
+        {
+            definedComponents.Clear();
+            this.definer = definer;
+            if (definer != null)
+            {
+                definer.cmsEntity = this;
+                definer.OnDefine();
+            }
+
+            #if UNITY_EDITOR
+                EditorUtility.SetDirty(this);
+            #endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void DefineComponent(Type componentType)
+        {
+            var comp = (CmsComponent)Activator.CreateInstance(componentType);
+            definedComponents.Add(comp);
+        }
+    }
+
+    [Serializable]
+    public class CmsEntityDefiner
+    {
+        [NonSerialized]
+        public CmsEntityPfb cmsEntity;
+
+        public virtual void OnDefine()
+        {
+            
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Define(Type type)
+        {
+            cmsEntity.DefineComponent(type);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Define<T>() where T : CmsComponent
+        {
+            Define(typeof(T));
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public class WithDefinerAttribute : PropertyAttribute
+    {
+        public Type DefinerType { get; }
+
+        public WithDefinerAttribute(Type type)
+        {
+            DefinerType = type;
         }
     }
 

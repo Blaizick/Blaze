@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DG.Tweening;
 
 namespace Blaze.Runtime.Utils
 {
@@ -14,7 +15,7 @@ namespace Blaze.Runtime.Utils
         }
     }
 
-    public static class TextUtils
+    public static class CurrencyFormatUtils
     {
         public const string thousand = "K.";
         public const string million = "M.";
@@ -34,6 +35,14 @@ namespace Blaze.Runtime.Utils
             }
 
             return count.ToString();
+        }
+    }
+
+    public static class TweenUtils
+    {
+        public static bool IsTweenActive(Tween tween)
+        {
+            return tween != null && tween.IsActive();
         }
     }
 }

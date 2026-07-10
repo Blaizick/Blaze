@@ -1,80 +1,114 @@
 using System;
 using System.Collections;
+using Blaze.Runtime.Utils;
+using DG.Tweening;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 namespace Blaze.Runtime.Ui
 {
-    public class TextScreen : MonoBehaviour
+    public class TextScreen : MonoBehaviour, IPointerClickHandler
     {
-        public TextTypewriter typewriter;
         public GameObject root;
+        public TextTypewriter typewriter;
         public CanvasGroup canvasGroup;
 
-        public void Init()
+        public GameObject clickTooltipRoot;
+        public CanvasGroup clickTooltipCanvasGroup;
+        public Tween clickTooltipTween;
+        [NonSerialized] public bool clickTooltipShown;
+
+        public IEnumerator Init()
         {
+            clickTooltipRoot.SetActive(false);
             root.SetActive(false);
+        
+            yield break;
         }
 
-        public IEnumerator WriteTextCoroutine(string text)
+        public void _Update()
         {
-            yield return typewriter.WriteCoroutine(text);
-        }
-
-        public IEnumerator WaitUntilClick()
-        {
-            clicked = false;
-            while (!clicked)
+            if (typewriter.WaitingForClick && typewriter.WaitingForClickTime >= 1.0f)
             {
-                yield return null;                
-            }
-        }
-
-        [NonSerialized] public bool clicked = false;
-
-        public void Update()
-        {
-            if (Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                if (typewriter.writeCoroutine == null)
+                if (!clickTooltipShown)
                 {
-                    if (!clicked)
+                    if (TweenUtils.IsTweenActive(clickTooltipTween))
                     {
-                        clicked = true;
+                        clickTooltipTween.Complete();
+                    }
+                    clickTooltipRoot.gameObject.SetActive(true);
+                    clickTooltipCanvasGroup.alpha = 0.0f;
+                    clickTooltipTween = clickTooltipCanvasGroup.DOFade(1.0f, 0.25f);
+                    clickTooltipShown = true;
+                }
+            }
+            else
+            {
+                if (clickTooltipShown)
+                {
+                    if (clickTooltipShown)
+                    {
+                        if (TweenUtils.IsTweenActive(clickTooltipTween))
+                        {
+                            clickTooltipTween.Complete();
+                        }
+                        clickTooltipRoot.gameObject.SetActive(true);
+                        clickTooltipCanvasGroup.alpha = 1.0f;
+                        clickTooltipTween = clickTooltipCanvasGroup.DOFade(0.0f, 0.25f).OnComplete(() =>
+                        {
+                            clickTooltipRoot.SetActive(false);
+                        });
+                        clickTooltipShown = false;
                     }
                 }
-                else
-                {
-                    typewriter.Skip();
-                }    
             }
         }
 
-        public IEnumerator HideCoroutine()
+        public void OnPointerClick(PointerEventData eventData)
         {
-            root.SetActive(true);
-            canvasGroup.alpha = 1.0f;
-            float t = 0.0f;
-            while (t < 1.0f)
+            if (clickTooltipShown)
             {
-                canvasGroup.alpha = Mathf.Lerp(1.0f, 0.0f, t);
-                yield return null;
+                if (TweenUtils.IsTweenActive(clickTooltipTween))
+                {
+                    clickTooltipTween.Complete();
+                }
+                clickTooltipRoot.gameObject.SetActive(true);
+                clickTooltipCanvasGroup.alpha = 1.0f;
+                clickTooltipTween = clickTooltipCanvasGroup.DOFade(0.0f, 0.25f).OnComplete(() =>
+                {
+                    clickTooltipRoot.SetActive(false);
+                });
+                clickTooltipShown = false;
             }
+            typewriter.OnPointerClick(eventData);
+        }
+
+        public void ShowImmediate()
+        {
+            clickTooltipRoot.SetActive(false);
+            canvasGroup.alpha = 1.0f;
+            root.SetActive(true);
+        }
+        public void HideImmediate()
+        {
             canvasGroup.alpha = 0.0f;
             root.SetActive(false);
         }
 
         public IEnumerator ShowCoroutine()
         {
+            HideImmediate();
             root.SetActive(true);
-            canvasGroup.alpha = 0.0f;
-            float t = 0.0f;
-            while (t < 1.0f)
-            {
-                canvasGroup.alpha = Mathf.Lerp(0.0f, 1.0f, t);
-                yield return null;
-            }
-            canvasGroup.alpha = 1.0f;
+            yield return canvasGroup.DOFade(1.0f, 0.25f).WaitForCompletion();
+            typewriter.Text = string.Empty;
+            ShowImmediate();
+        }
+        public IEnumerator HideCoroutine()
+        {
+            ShowImmediate();
+            yield return canvasGroup.DOFade(0.0f, 0.25f).WaitForCompletion();
+            typewriter.Text = string.Empty;
+            HideImmediate();
         }
     }
 }

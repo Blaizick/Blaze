@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Settings
   m_EditorClassIdentifier: com.blaizi.blaze.editor::Blaze.Editor.Settings
   referencesGeneratorWindowSettings:
-    namespaceName: BlazeTest
+    namespaceName: 
     outputPath: Assets/Blaze/Src/CmsReferences.cs

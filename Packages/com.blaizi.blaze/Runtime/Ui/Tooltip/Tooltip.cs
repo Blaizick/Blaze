@@ -26,6 +26,39 @@ namespace Blaze.Runtime.Ui
             root.SetActive(false);
         }
 
+        public virtual void Awake()
+        {
+            
+        }
+
+        public virtual void Start()
+        {
+            
+        }
+
+        public virtual void Update()
+        {
+            Vector2 defaultMin = new(rootRectTr.anchoredPosition.x, rootRectTr.anchoredPosition.y - rootRectTr.sizeDelta.y);
+            Vector2 defaultMax = new(rootRectTr.anchoredPosition.x + rootRectTr.sizeDelta.x, rootRectTr.anchoredPosition.y);
+
+            if (defaultMax.x > Screen.width)
+            {
+                rootRectTr.pivot = new(1.0f, rootRectTr.pivot.y);
+            }
+            else
+            {
+                rootRectTr.pivot = new(0.0f, rootRectTr.pivot.y);
+            }
+            if (defaultMin.y < 0.0f)
+            {
+                rootRectTr.pivot = new(rootRectTr.pivot.x, 0.0f);
+            }
+            else
+            {
+                rootRectTr.pivot = new(rootRectTr.pivot.x, 1.0f);
+            }
+        }
+
         public virtual void OnDestroy()
         {
             
