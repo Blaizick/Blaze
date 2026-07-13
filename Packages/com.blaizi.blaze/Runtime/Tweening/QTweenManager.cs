@@ -2,26 +2,44 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace Blaze.Runtime.Tweening
 {
     public class QTweenManager : MonoBehaviour
     {
-        private static QTweenManager s_TweenCore = null;
+        private static bool s_TweenManagerInstanceCreated = false;
+        private static QTweenManager s_TweenManagerInstance = null;
+        
         public static QTweenManager Instance
         {
             get
             {
-                if (s_TweenCore == null)
+                if (s_TweenManagerInstance == null)
                 {
-                    s_TweenCore = new GameObject("Q Tween Manager").AddComponent<QTweenManager>();
+                    if (!s_TweenManagerInstanceCreated)
+                    {
+                        var go = new GameObject("Q Tween Manager");
+                        s_TweenManagerInstance = go.AddComponent<QTweenManager>();
+                        DontDestroyOnLoad(go);
+                        s_TweenManagerInstance.Init();
+                        s_TweenManagerInstanceCreated = true;
+                    }
                 }
-                return s_TweenCore;
+                return s_TweenManagerInstance;
             }
         }
         private List<IQTweenCore> m_Tweens = new();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void ResetStatistics()
+        {
+            s_TweenManagerInstance = null;
+            s_TweenManagerInstanceCreated = false;
+        }
 
         public void Update()
         {
@@ -40,6 +58,14 @@ namespace Blaze.Runtime.Tweening
                     tween.ApplyValue();
                 }
             }
+        }
+
+        public virtual void Init()
+        {
+            SceneManager.sceneUnloaded += scene =>
+            {
+                m_Tweens.Clear();
+            };
         }
 
         public void StartTween(IQTweenCore tween)
@@ -418,7 +444,7 @@ namespace Blaze.Runtime.Tweening
 
         public QTween Complete()
         {
-            QTweenManager.Instance.CompleteTween(tweenCore);
+            QTweenManager.Instance?.CompleteTween(tweenCore);
             return this;
         }
 
@@ -430,7 +456,7 @@ namespace Blaze.Runtime.Tweening
 
         public QTween Kill()
         {
-            QTweenManager.Instance.KillTween(tweenCore);
+            QTweenManager.Instance?.KillTween(tweenCore);
             return this;
         }
         
@@ -487,7 +513,7 @@ namespace Blaze.Runtime.Tweening
                 new FloatLerper(),
                 target
                 );
-            QTweenManager.Instance.StartTween(tweenCore);
+            QTweenManager.Instance?.StartTween(tweenCore);
             return tweenCore.Tween;
         }
     }
@@ -504,7 +530,7 @@ namespace Blaze.Runtime.Tweening
                 new Vector3Lerper(),
                 target
                 );
-            QTweenManager.Instance.StartTween(tweenCore);
+            QTweenManager.Instance?.StartTween(tweenCore);
             return tweenCore.Tween;
         }
 
@@ -519,7 +545,7 @@ namespace Blaze.Runtime.Tweening
                 new QVector3Puncher(),
                 target
                 );
-            QTweenManager.Instance.StartTween(tweenCore);
+            QTweenManager.Instance?.StartTween(tweenCore);
             return tweenCore.Tween;
         }
     }
@@ -528,7 +554,7 @@ namespace Blaze.Runtime.Tweening
     {
         public static void QKill(this object _object)
         {
-            QTweenManager.Instance.KillTweensConnectedTo(_object);
+            QTweenManager.Instance?.KillTweensConnectedTo(_object);
         }
     }
 }
