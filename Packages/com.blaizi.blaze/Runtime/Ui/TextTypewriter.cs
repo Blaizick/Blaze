@@ -10,7 +10,7 @@ namespace Blaze.Runtime.Ui
     {
         public TMP_Text targetText;
 
-        public float charsPerSec = 20f;
+        public float charsPerSec = 120f;
 
         public Coroutine writeCoroutine;
         public Coroutine coroutine;

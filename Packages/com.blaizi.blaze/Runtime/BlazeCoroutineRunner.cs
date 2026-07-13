@@ -13,7 +13,7 @@ namespace Blaze.Runtime
             {
                 if (s_Instance == null)
                 {
-                    s_Instance = new GameObject().AddComponent<BlazeCoroutineRunner>();
+                    s_Instance = new GameObject("Blaze Coroutine Runner").AddComponent<BlazeCoroutineRunner>();
                 }
                 return s_Instance;
             }

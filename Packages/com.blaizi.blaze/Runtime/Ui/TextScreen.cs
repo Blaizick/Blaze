@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
-using Blaze.Runtime.Utils;
-using DG.Tweening;
+using Blaze.Runtime.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -13,52 +12,55 @@ namespace Blaze.Runtime.Ui
         public TextTypewriter typewriter;
         public CanvasGroup canvasGroup;
 
+        public bool clickTooltip;
+
         public GameObject clickTooltipRoot;
         public CanvasGroup clickTooltipCanvasGroup;
-        public Tween clickTooltipTween;
-        [NonSerialized] public bool clickTooltipShown;
+        public QTween clickTooltipTween;
+        [NonSerialized] public bool clickTooltipActive;
 
-        public IEnumerator Init()
+        public void Init()
         {
-            clickTooltipRoot.SetActive(false);
+            if (clickTooltip)
+            {
+                clickTooltipRoot.SetActive(false);
+            }
             root.SetActive(false);
-        
-            yield break;
         }
 
         public void _Update()
         {
-            if (typewriter.WaitingForClick && typewriter.WaitingForClickTime >= 1.0f)
+            if (clickTooltip)
             {
-                if (!clickTooltipShown)
+                if (typewriter.WaitingForClick && typewriter.WaitingForClickTime >= 1.0f)
                 {
-                    if (TweenUtils.IsTweenActive(clickTooltipTween))
+                    if (!clickTooltipActive)
                     {
-                        clickTooltipTween.Complete();
+                        if (QTweenUtils.IsTweenActive(clickTooltipTween))
+                        {
+                            clickTooltipTween.Complete();
+                        }
+                        clickTooltipRoot.gameObject.SetActive(true);
+                        clickTooltipCanvasGroup.alpha = 0.0f;
+                        clickTooltipTween = clickTooltipCanvasGroup.QFade(1.0f, 0.25f);
+                        clickTooltipActive = true;
                     }
-                    clickTooltipRoot.gameObject.SetActive(true);
-                    clickTooltipCanvasGroup.alpha = 0.0f;
-                    clickTooltipTween = clickTooltipCanvasGroup.DOFade(1.0f, 0.25f);
-                    clickTooltipShown = true;
                 }
-            }
-            else
-            {
-                if (clickTooltipShown)
+                else
                 {
-                    if (clickTooltipShown)
+                    if (clickTooltipActive)
                     {
-                        if (TweenUtils.IsTweenActive(clickTooltipTween))
+                        if (QTweenUtils.IsTweenActive(clickTooltipTween))
                         {
                             clickTooltipTween.Complete();
                         }
                         clickTooltipRoot.gameObject.SetActive(true);
                         clickTooltipCanvasGroup.alpha = 1.0f;
-                        clickTooltipTween = clickTooltipCanvasGroup.DOFade(0.0f, 0.25f).OnComplete(() =>
+                        clickTooltipTween = clickTooltipCanvasGroup.QFade(0.0f, 0.25f).OnComplete(() =>
                         {
                             clickTooltipRoot.SetActive(false);
                         });
-                        clickTooltipShown = false;
+                        clickTooltipActive = false;
                     }
                 }
             }
@@ -66,26 +68,37 @@ namespace Blaze.Runtime.Ui
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (clickTooltipShown)
+            if (clickTooltip)
             {
-                if (TweenUtils.IsTweenActive(clickTooltipTween))
+                if (clickTooltipActive)
                 {
-                    clickTooltipTween.Complete();
+                    if (QTweenUtils.IsTweenActive(clickTooltipTween))
+                    {
+                        clickTooltipTween.Complete();
+                    }
+                    clickTooltipRoot.gameObject.SetActive(true);
+                    clickTooltipCanvasGroup.alpha = 1.0f;
+                    clickTooltipTween = clickTooltipCanvasGroup.QFade(0.0f, 0.25f).OnComplete(() =>
+                    {
+                        clickTooltipRoot.SetActive(false);
+                    });
+                    clickTooltipActive = false;
                 }
-                clickTooltipRoot.gameObject.SetActive(true);
-                clickTooltipCanvasGroup.alpha = 1.0f;
-                clickTooltipTween = clickTooltipCanvasGroup.DOFade(0.0f, 0.25f).OnComplete(() =>
-                {
-                    clickTooltipRoot.SetActive(false);
-                });
-                clickTooltipShown = false;
             }
             typewriter.OnPointerClick(eventData);
         }
 
         public void ShowImmediate()
         {
-            clickTooltipRoot.SetActive(false);
+            if (clickTooltip)
+            {
+                if (QTweenUtils.IsTweenActive(clickTooltipTween))
+                {
+                    clickTooltipTween.Complete();
+                }
+                clickTooltipRoot.SetActive(false);
+                clickTooltipActive = false;
+            }
             canvasGroup.alpha = 1.0f;
             root.SetActive(true);
         }
@@ -99,14 +112,14 @@ namespace Blaze.Runtime.Ui
         {
             HideImmediate();
             root.SetActive(true);
-            yield return canvasGroup.DOFade(1.0f, 0.25f).WaitForCompletion();
+            yield return canvasGroup.QFade(1.0f, 0.25f).WaitForCompletion();
             typewriter.Text = string.Empty;
             ShowImmediate();
         }
         public IEnumerator HideCoroutine()
         {
             ShowImmediate();
-            yield return canvasGroup.DOFade(0.0f, 0.25f).WaitForCompletion();
+            yield return canvasGroup.QFade(0.0f, 0.25f).WaitForCompletion();
             typewriter.Text = string.Empty;
             HideImmediate();
         }

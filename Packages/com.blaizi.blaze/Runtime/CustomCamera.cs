@@ -8,8 +8,9 @@ namespace Blaze.Runtime
     public class CustomCamera : MonoBehaviour
     {
         public CinemachineCamera cinemachineCamera;
-        [NonSerialized] public float targetZoom;
+        public float targetZoom;
         public float zoomSpeed;
+        
         public void Init()
         {
             targetZoom = cinemachineCamera.Lens.OrthographicSize;
