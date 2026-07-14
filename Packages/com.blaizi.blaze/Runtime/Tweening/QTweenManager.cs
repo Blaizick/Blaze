@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.PlayerLoop;
 using UnityEngine.SceneManagement;
 
 namespace Blaze.Runtime.Tweening
@@ -34,6 +36,9 @@ namespace Blaze.Runtime.Tweening
         }
         private List<IQTweenCore> m_Tweens = new();
 
+        public static bool customUpdate = false;
+
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void ResetStatistics()
         {
@@ -43,11 +48,19 @@ namespace Blaze.Runtime.Tweening
 
         public void Update()
         {
+            if (!customUpdate)
+            {
+                QUpdate();
+            }
+        }
+
+        public void QUpdate()
+        {
             for (int i = 0; i < m_Tweens.Count; i++)
             {
                 var tween = m_Tweens[i];
-
-                tween.Process(Time.deltaTime);
+                
+                tween.Process();
                 
                 if (tween.ShouldEnd())
                 {
@@ -197,6 +210,13 @@ namespace Blaze.Runtime.Tweening
             return n1 * t * t + 0.984375f;
         }
     }
+
+    public enum DeltaTimeSource
+    {
+        DeltaTime,
+        UnscaledDeltaTime,
+        FixedDeltaTime,
+    }
     
     public interface IQTweenCore
     {
@@ -204,10 +224,11 @@ namespace Blaze.Runtime.Tweening
         public UnityEvent OnComplete { get; set; }
         public object ConnectedObject { get; set; }
         public IQEaseFunction EaseFunction { get; set; }
+        public DeltaTimeSource DeltaTimeSource { get; set; }
 
         public void ApplyValue();
         public bool ShouldEnd();
-        public void Process(float t);
+        public void Process();
         public void EndQuiet();
     }
     public abstract class QBaseTweenCore<T> : IQTweenCore
@@ -218,6 +239,7 @@ namespace Blaze.Runtime.Tweening
         public bool active;
         public UnityEvent onComplete = new();
         public IQEaseFunction easeFunction = new QInOutCubicEaseFunction();
+        public DeltaTimeSource deltaTimeSource = DeltaTimeSource.DeltaTime;
 
         public bool Active
         {
@@ -243,9 +265,16 @@ namespace Blaze.Runtime.Tweening
         public IQEaseFunction EaseFunction
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => EaseFunction;
+            get => easeFunction;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => EaseFunction = value;
+            set => easeFunction = value;
+        }
+        public DeltaTimeSource DeltaTimeSource 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => deltaTimeSource;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => deltaTimeSource = value;
         }
 
         private QTween m_Tween = null;
@@ -272,8 +301,16 @@ namespace Blaze.Runtime.Tweening
 
         public abstract void ApplyValue();
         public abstract bool ShouldEnd();
-        public abstract void Process(float t);
+        public abstract void Process();
         public abstract void EndQuiet();
+
+        protected float DeltaTime => DeltaTimeSource switch
+        {
+            DeltaTimeSource.DeltaTime => Time.deltaTime,
+            DeltaTimeSource.UnscaledDeltaTime  => Time.unscaledDeltaTime,
+            DeltaTimeSource.FixedDeltaTime => Time.fixedDeltaTime,
+            _ => 0f
+        };
     }
     public class QLerpTweenCore<T> : QBaseTweenCore<T>
     {
@@ -312,9 +349,9 @@ namespace Blaze.Runtime.Tweening
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void Process(float t)
+        public override void Process()
         {
-            progress += t / duration;
+            progress += DeltaTime / duration;
         }
     
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -399,9 +436,9 @@ namespace Blaze.Runtime.Tweening
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void Process(float t)
+        public override void Process()
         {
-            progress += t / duration;
+            progress += DeltaTime / duration;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -465,6 +502,12 @@ namespace Blaze.Runtime.Tweening
             tweenCore.EaseFunction = easeFunction;
             return this;
         } 
+
+        public QTween SetDeltaTimeSource(DeltaTimeSource deltaTimeSource)
+        {
+            tweenCore.DeltaTimeSource = deltaTimeSource;
+            return this;
+        }
     }
 
     public class QTweenUtils

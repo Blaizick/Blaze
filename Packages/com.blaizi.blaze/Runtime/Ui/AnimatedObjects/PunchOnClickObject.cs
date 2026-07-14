@@ -34,7 +34,9 @@ namespace Blaze.Runtime.Ui
                     transform.localScale = Vector3.one;
                 }
                 
-                m_PunchTween = transform.QPunchLocalScale(punchEffect, animationDuration);
+                m_PunchTween = transform.
+                    QPunchLocalScale(punchEffect, animationDuration).
+                    SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
             }
         }
     }

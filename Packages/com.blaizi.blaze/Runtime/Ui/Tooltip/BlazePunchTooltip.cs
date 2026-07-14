@@ -22,7 +22,9 @@ namespace Blaze.Runtime.Ui
                 m_Tween.Complete();
             }
             RootRectTr.localScale = Vector3.one;
-            m_Tween = RootRectTr.QPunchLocalScale(new Vector3(0.1f, 0.1f, 0.0f), 0.25f);
+            m_Tween = RootRectTr.
+                QPunchLocalScale(new Vector3(0.1f, 0.1f, 0.0f), 0.25f).
+                SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
             
             base.Show();
         }

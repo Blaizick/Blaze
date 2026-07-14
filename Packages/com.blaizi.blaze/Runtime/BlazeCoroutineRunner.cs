@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Blaze.Runtime 
 {
@@ -24,7 +25,7 @@ namespace Blaze.Runtime
         {
             get
             {
-                return progress >= 1.0f;
+                return progress < 1.0f;
             }
         }
 
@@ -34,11 +35,11 @@ namespace Blaze.Runtime
         }
     }
 
-    public class CoroutineState
+    public class BlazeCoroutine
     {
         private readonly Stack<IEnumerator> m_Stack = new();
 
-        public CoroutineState(IEnumerator root)
+        public BlazeCoroutine(IEnumerator root)
         {
             m_Stack.Push(root);
         }
@@ -58,22 +59,25 @@ namespace Blaze.Runtime
                 switch (current.Current)
                 {
                     case IEnumerator nested:
+                    {
                         m_Stack.Push(nested);
-                        break;
-
+                        continue;
+                    }
                     case IBlazeYieldInstruction wait:
+                    {
+                        wait.Step();
+
                         if (wait.KeepWaiting)
                         {
-                            wait.Step();
                             return true;
                         }
-                        break;
 
-                    case null:
-                        return true;
-
+                        continue;
+                    }
                     default:
+                    {
                         return true;
+                    }
                 }
             }
 
@@ -90,17 +94,40 @@ namespace Blaze.Runtime
             {
                 if (s_Instance == null)
                 {
-                    s_Instance = new GameObject("Blaze Coroutine Runner").AddComponent<BlazeCoroutineRunner>();
+                    if (!s_InstanceCreated)
+                    {
+                        var go = new GameObject("Blaze Coroutine Runner");
+                        s_Instance = go.AddComponent<BlazeCoroutineRunner>();
+                        s_Instance.Init();
+                        DontDestroyOnLoad(go);
+                    }
                 }
                 return s_Instance;
             }
         }
+        private static bool s_InstanceCreated = false;
 
-        private List<CoroutineState> m_Coroutines = new();
+        private List<BlazeCoroutine> m_Coroutines = new();
+        private List<BlazeCoroutine> m_PausedCoroutines = new();
 
-        public bool customUpdate = false;
+        public static bool customUpdate = false;
 
-        public void _Update()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void ResetStatistics()
+        {
+            s_Instance = null;
+            s_InstanceCreated = false;
+        }
+
+        public virtual void Init()
+        {
+            SceneManager.sceneUnloaded += scene =>
+            {
+                BStopAllCoroutines();
+            };
+        }
+
+        public virtual void BUpdate()
         {
             for (int i = m_Coroutines.Count - 1; i >= 0; i--)
             {
@@ -111,87 +138,138 @@ namespace Blaze.Runtime
             }
         }
 
-        public void Update()
+        public virtual void Update()
         {
             if (!customUpdate)
             {
-                _Update();
+                BUpdate();
             }
         }
 
-        public void Run(IEnumerator routine)
+        #region BaseMethods
+
+        public virtual BlazeCoroutine BRunCoroutine(IEnumerator routine)
         {
-            m_Coroutines.Add(new CoroutineState(routine));
+            var coroutine = new BlazeCoroutine(routine);
+            m_Coroutines.Add(coroutine);
+            return coroutine;
+        }
+        
+        public virtual void BPauseCoroutine(BlazeCoroutine coroutine)
+        {
+            int coroutineIndex = m_Coroutines.IndexOf(coroutine);
+            if (!m_PausedCoroutines.Contains(coroutine) && 
+                coroutineIndex > -1)
+            {
+                m_Coroutines.RemoveAt(coroutineIndex);
+                m_PausedCoroutines.Add(coroutine);
+            }
         }
 
-	    // #region WaitOnConditionThenExecute
-	    // public static void WaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
-	    // {
-	    // 	Instance.StartWaitOnConditionThenExecute(condition, action);
-	    // }
+        public virtual void BUnpauseCoroutine(BlazeCoroutine coroutine)
+        {
+            var pausedIndex = m_PausedCoroutines.IndexOf(coroutine);
+            if (pausedIndex > -1 && 
+                !m_Coroutines.Contains(coroutine))
+            {
+                m_PausedCoroutines.RemoveAt(pausedIndex);
+                m_Coroutines.Add(coroutine);
+            }
+        }
 
-	    // public void StartWaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
-	    // {
-	    // 	StartCoroutine(DoWaitOnConditionThenExecute(condition, action));
-	    // }
+        public virtual void BStopCoroutine(BlazeCoroutine coroutine)
+        {
+            int coroutineIndex = m_Coroutines.IndexOf(coroutine);
+            if (coroutineIndex > -1)
+            {
+                m_Coroutines.RemoveAt(coroutineIndex);
+            }
+            else
+            {
+                int pausedIndex = m_PausedCoroutines.IndexOf(coroutine);
+                if (pausedIndex > -1)
+                {
+                    m_PausedCoroutines.RemoveAt(pausedIndex);
+                }
+            }
+        }
 
-	    // private IEnumerator DoWaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
-	    // {
-	    // 	yield return new WaitUntil (() => condition() == true);
-	    // 	action();
-	    // }
-	    // #endregion
+        public virtual void BStopAllCoroutines()
+        {
+            m_Coroutines.Clear();
+            m_PausedCoroutines.Clear();
+        }
 
-        // #region WaitThenExecute
-	    // public static void WaitThenExecute(float wait, System.Action action, bool unscaledTime = false)
-        // {
-	    // 	Instance.StartWaitThenExecute(wait, action, unscaledTime);
-        // }
+        #endregion
 
-	    // public void StartWaitThenExecute(float wait, System.Action action, bool unscaledTime = false)
-        // {
-	    // 	StartCoroutine(DoWaitThenExecute(wait, action, unscaledTime));
-        // }
+	    #region WaitOnConditionThenExecute
+	    public static void WaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
+	    {
+	    	Instance.StartWaitOnConditionThenExecute(condition, action);
+	    }
 
-	    // private IEnumerator DoWaitThenExecute(float wait, System.Action action, bool unscaledTime = false)
-        // {
-        //     if (wait <= 0f)
-        //     {
-        //         yield return new WaitForEndOfFrame();
-        //     }
-        //     else
-        //     {
-	    // 		if (unscaledTime)
-	    // 		{
-	    // 			yield return new WaitForSecondsRealtime (wait);
-	    // 		}
-	    // 		else
-	    // 		{
-	    // 			yield return new WaitForSeconds (wait);
-	    // 		}
-        //     }
-        //     action();
-        // }
-        // #endregion
+	    public virtual void StartWaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
+	    {
+	    	StartCoroutine(DoWaitOnConditionThenExecute(condition, action));
+	    }
 
-        // #region WaitOnCondition
-        // public static Coroutine WaitOnCondition(System.Func<bool> condition)
-        // {
-        //     return Instance.StartWaitOnCondition(condition);
-        // }
+	    private IEnumerator DoWaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
+	    {
+	    	yield return new WaitUntil (() => condition() == true);
+	    	action();
+	    }
+	    #endregion
 
-        // public Coroutine StartWaitOnCondition(System.Func<bool> condition)
-        // {
-        //     return StartCoroutine(DoWaitOnCondition(condition));
-        // }
+        #region WaitThenExecute
+	    public static void WaitThenExecute(float wait, System.Action action, bool unscaledTime = false)
+        {
+	    	Instance.StartWaitThenExecute(wait, action, unscaledTime);
+        }
 
-        // IEnumerator DoWaitOnCondition(System.Func<bool> condition)
-        // {
-        //     while (condition())
-        //     {
-        //        yield return new WaitForEndOfFrame();
-        //     }
-        // }
-        // #endregion
+	    public virtual void StartWaitThenExecute(float wait, System.Action action, bool unscaledTime = false)
+        {
+	    	StartCoroutine(DoWaitThenExecute(wait, action, unscaledTime));
+        }
+
+	    private IEnumerator DoWaitThenExecute(float wait, System.Action action, bool unscaledTime = false)
+        {
+            if (wait <= 0f)
+            {
+                yield return new WaitForEndOfFrame();
+            }
+            else
+            {
+	    		if (unscaledTime)
+	    		{
+	    			yield return new WaitForSecondsRealtime (wait);
+	    		}
+	    		else
+	    		{
+	    			yield return new WaitForSeconds (wait);
+	    		}
+            }
+            action();
+        }
+        #endregion
+
+        #region WaitOnCondition
+        public static BlazeCoroutine WaitOnCondition(System.Func<bool> condition)
+        {
+            return Instance.StartWaitOnCondition(condition);
+        }
+
+        public virtual BlazeCoroutine StartWaitOnCondition(System.Func<bool> condition)
+        {
+            return BRunCoroutine(DoWaitOnCondition(condition));
+        }
+
+        IEnumerator DoWaitOnCondition(System.Func<bool> condition)
+        {
+            while (condition())
+            {
+               yield return new WaitForEndOfFrame();
+            }
+        }
+        #endregion
     }
 }

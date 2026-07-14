@@ -15,12 +15,9 @@ MonoBehaviour:
   id: Content/NewCmsEntity
   components:
   - rid: 858555086622949425
-  - rid: -2
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 858555086622949425
       type: {class: CustomCmsComponent, ns: , asm: Assembly-CSharp}
       data:

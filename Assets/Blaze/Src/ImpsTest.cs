@@ -13,8 +13,8 @@ namespace Blaze.Test
 
         public void Awake()
         {
-            BlazeCoroutineRunner.Instance.Run(Coroutine2());
-            BlazeCoroutineRunner.Instance.Run(Coroutine());
+            BlazeCoroutineRunner.Instance.BRunCoroutine(Coroutine2());
+            BlazeCoroutineRunner.Instance.BRunCoroutine(Coroutine());
             // BlazeCoroutineRunner.Instance.StartCoroutine();
         }
 

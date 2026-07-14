@@ -28,6 +28,12 @@ namespace Blaze.Runtime.Ui
             root.SetActive(false);
         }
 
+        public virtual void OnDestroy()
+        {
+            canvasGroup.QKill();
+            clickTooltipCanvasGroup.QKill();
+        }
+
         public virtual void Update()
         {
             if (clickTooltip)
@@ -42,7 +48,9 @@ namespace Blaze.Runtime.Ui
                         }
                         clickTooltipRoot.gameObject.SetActive(true);
                         clickTooltipCanvasGroup.alpha = 0.0f;
-                        clickTooltipTween = clickTooltipCanvasGroup.QFade(1.0f, 0.25f);
+                        clickTooltipTween = clickTooltipCanvasGroup.
+                            QFade(1.0f, 0.25f).
+                            SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
                         clickTooltipActive = true;
                     }
                 }
@@ -56,7 +64,10 @@ namespace Blaze.Runtime.Ui
                         }
                         clickTooltipRoot.gameObject.SetActive(true);
                         clickTooltipCanvasGroup.alpha = 1.0f;
-                        clickTooltipTween = clickTooltipCanvasGroup.QFade(0.0f, 0.25f).OnComplete(() =>
+                        clickTooltipTween = clickTooltipCanvasGroup.
+                            QFade(0.0f, 0.25f).
+                            SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
+                            OnComplete(() =>
                         {
                             clickTooltipRoot.SetActive(false);
                         });
@@ -78,7 +89,10 @@ namespace Blaze.Runtime.Ui
                     }
                     clickTooltipRoot.gameObject.SetActive(true);
                     clickTooltipCanvasGroup.alpha = 1.0f;
-                    clickTooltipTween = clickTooltipCanvasGroup.QFade(0.0f, 0.25f).OnComplete(() =>
+                    clickTooltipTween = clickTooltipCanvasGroup.
+                        QFade(0.0f, 0.25f).
+                        SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
+                        OnComplete(() =>
                     {
                         clickTooltipRoot.SetActive(false);
                     });
@@ -112,14 +126,20 @@ namespace Blaze.Runtime.Ui
         {
             HideImmediate();
             root.SetActive(true);
-            yield return canvasGroup.QFade(1.0f, 0.25f).WaitForCompletion();
+            yield return canvasGroup.
+                QFade(1.0f, 0.25f).
+                SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
+                WaitForCompletion();
             typewriter.Text = string.Empty;
             ShowImmediate();
         }
         public virtual IEnumerator HideCoroutine()
         {
             ShowImmediate();
-            yield return canvasGroup.QFade(0.0f, 0.25f).WaitForCompletion();
+            yield return canvasGroup.
+                QFade(0.0f, 0.25f).
+                SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
+                WaitForCompletion();
             typewriter.Text = string.Empty;
             HideImmediate();
         }
