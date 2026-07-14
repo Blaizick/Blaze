@@ -10,7 +10,7 @@ namespace Blaze.Runtime.Ui
 
         public override void OnDestroy()
         {
-            rootRectTr.QKill();
+            RootRectTr.QKill();
 
             base.OnDestroy();
         }
@@ -21,8 +21,8 @@ namespace Blaze.Runtime.Ui
             {
                 m_Tween.Complete();
             }
-            rootRectTr.localScale = Vector3.one;
-            m_Tween = rootRectTr.QPunchLocalScale(new Vector3(0.1f, 0.1f, 0.0f), 0.25f);
+            RootRectTr.localScale = Vector3.one;
+            m_Tween = RootRectTr.QPunchLocalScale(new Vector3(0.1f, 0.1f, 0.0f), 0.25f);
             
             base.Show();
         }

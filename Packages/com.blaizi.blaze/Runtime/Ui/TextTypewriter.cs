@@ -51,7 +51,7 @@ namespace Blaze.Runtime.Ui
             }
         }
 
-        public IEnumerator WaitForClick()
+        public virtual IEnumerator WaitForClick()
         {
             m_WaitForClickStartTime = Time.time;
             m_WaitingForClick = true;
@@ -63,7 +63,7 @@ namespace Blaze.Runtime.Ui
             m_WaitingForClick = false;
         }
 
-        public Coroutine WriteCoroutine(string text)
+        public virtual Coroutine WriteCoroutine(string text)
         {
             if (writeCoroutine != null)
             {
@@ -74,7 +74,7 @@ namespace Blaze.Runtime.Ui
             return writeCoroutine;
         }
 
-        private IEnumerator _WriteCoroutine(string text)
+        protected virtual IEnumerator _WriteCoroutine(string text)
         {
             m_InterruptRequested = false;
             m_WritingText = text;
@@ -93,13 +93,13 @@ namespace Blaze.Runtime.Ui
             }
         }
 
-        public void Skip()
+        public virtual void Skip()
         {
             Interrupt();
         }
 
 
-        public void Interrupt()
+        public virtual void Interrupt()
         {
             if (writeCoroutine != null)
             {
@@ -117,7 +117,7 @@ namespace Blaze.Runtime.Ui
             }
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public virtual void OnPointerClick(PointerEventData eventData)
         {
             m_Clicked = true;
             if (skipOnClick)

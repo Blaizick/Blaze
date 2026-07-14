@@ -13,7 +13,9 @@ namespace Blaze.Test
 
         public void Awake()
         {
-            BlazeCoroutineRunner.Instance.StartCoroutine(Coroutine());
+            BlazeCoroutineRunner.Instance.Run(Coroutine2());
+            BlazeCoroutineRunner.Instance.Run(Coroutine());
+            // BlazeCoroutineRunner.Instance.StartCoroutine();
         }
 
         public IEnumerator Coroutine()
@@ -25,6 +27,15 @@ namespace Blaze.Test
             yield return textScreen.typewriter.WriteCoroutine("dadwadasd");
             yield return textScreen.typewriter.WaitForClick();
             yield return textScreen.HideCoroutine();
+        }
+
+        public IEnumerator Coroutine2()
+        {
+            yield return Coroutine3();
+        }
+        public IEnumerator Coroutine3()
+        {
+            yield break;
         }
     }
 }

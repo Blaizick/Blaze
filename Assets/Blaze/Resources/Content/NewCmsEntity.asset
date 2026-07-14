@@ -13,43 +13,16 @@ MonoBehaviour:
   m_Name: NewCmsEntity
   m_EditorClassIdentifier: com.blaizi.blaze.runtime::Blaze.Runtime.Cms.CmsEntityPfb
   id: Content/NewCmsEntity
-  definer:
-    rid: 858554993415028912
   components:
-  - rid: 858554993415028917
-  definedComponents:
-  - rid: 858554993415028913
-  - rid: 858554993415028914
-  - rid: 858554993415028915
-  - rid: 858554993415028916
+  - rid: 858555086622949425
+  - rid: -2
   references:
     version: 2
     RefIds:
-    - rid: 858554993415028912
-      type: {class: CustomDefiner2, ns: , asm: Assembly-CSharp}
-      data: 
-    - rid: 858554993415028913
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 858555086622949425
       type: {class: CustomCmsComponent, ns: , asm: Assembly-CSharp}
       data:
         a: 0
-        adad: {fileID: 0}
-    - rid: 858554993415028914
-      type: {class: CustomCmsComponent, ns: , asm: Assembly-CSharp}
-      data:
-        a: 0
-        adad: {fileID: 0}
-    - rid: 858554993415028915
-      type: {class: CustomCmsComponent, ns: , asm: Assembly-CSharp}
-      data:
-        a: 0
-        adad: {fileID: 0}
-    - rid: 858554993415028916
-      type: {class: CustomCmsComponent, ns: , asm: Assembly-CSharp}
-      data:
-        a: 0
-        adad: {fileID: 0}
-    - rid: 858554993415028917
-      type: {class: CustomCmsComponent, ns: , asm: Assembly-CSharp}
-      data:
-        a: 0
-        adad: {fileID: 0}
+        adad: {fileID: 11400000, guid: eb51fda27cd49e84282e13c7706ffb51, type: 2}

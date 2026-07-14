@@ -19,7 +19,7 @@ namespace Blaze.Runtime.Ui
         public QTween clickTooltipTween;
         [NonSerialized] public bool clickTooltipActive;
 
-        public void Init()
+        public virtual void Init()
         {
             if (clickTooltip)
             {
@@ -28,7 +28,7 @@ namespace Blaze.Runtime.Ui
             root.SetActive(false);
         }
 
-        public void _Update()
+        public virtual void Update()
         {
             if (clickTooltip)
             {
@@ -66,7 +66,7 @@ namespace Blaze.Runtime.Ui
             }
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public virtual void OnPointerClick(PointerEventData eventData)
         {
             if (clickTooltip)
             {
@@ -88,7 +88,7 @@ namespace Blaze.Runtime.Ui
             typewriter.OnPointerClick(eventData);
         }
 
-        public void ShowImmediate()
+        public virtual void ShowImmediate()
         {
             if (clickTooltip)
             {
@@ -102,13 +102,13 @@ namespace Blaze.Runtime.Ui
             canvasGroup.alpha = 1.0f;
             root.SetActive(true);
         }
-        public void HideImmediate()
+        public virtual void HideImmediate()
         {
             canvasGroup.alpha = 0.0f;
             root.SetActive(false);
         }
 
-        public IEnumerator ShowCoroutine()
+        public virtual IEnumerator ShowCoroutine()
         {
             HideImmediate();
             root.SetActive(true);
@@ -116,7 +116,7 @@ namespace Blaze.Runtime.Ui
             typewriter.Text = string.Empty;
             ShowImmediate();
         }
-        public IEnumerator HideCoroutine()
+        public virtual IEnumerator HideCoroutine()
         {
             ShowImmediate();
             yield return canvasGroup.QFade(0.0f, 0.25f).WaitForCompletion();

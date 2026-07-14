@@ -13,7 +13,7 @@ namespace Blaze.Runtime.Ui
         public TMP_Text description;
  
         public GameObject root;
-        public RectTransform rootRectTr;
+        public RectTransform RootRectTr => (RectTransform)root.transform;
 
         public bool Active => root.activeInHierarchy;
 
@@ -38,24 +38,26 @@ namespace Blaze.Runtime.Ui
 
         public virtual void Update()
         {
-            Vector2 defaultMin = new(rootRectTr.anchoredPosition.x, rootRectTr.anchoredPosition.y - rootRectTr.sizeDelta.y);
-            Vector2 defaultMax = new(rootRectTr.anchoredPosition.x + rootRectTr.sizeDelta.x, rootRectTr.anchoredPosition.y);
+            RootRectTr.anchoredPosition = Mouse.current.position.ReadValue();
+
+            Vector2 defaultMin = new(RootRectTr.anchoredPosition.x, RootRectTr.anchoredPosition.y - RootRectTr.sizeDelta.y);
+            Vector2 defaultMax = new(RootRectTr.anchoredPosition.x + RootRectTr.sizeDelta.x, RootRectTr.anchoredPosition.y);
 
             if (defaultMax.x > Screen.width)
             {
-                rootRectTr.pivot = new(1.0f, rootRectTr.pivot.y);
+                RootRectTr.pivot = new(1.0f, RootRectTr.pivot.y);
             }
             else
             {
-                rootRectTr.pivot = new(0.0f, rootRectTr.pivot.y);
+                RootRectTr.pivot = new(0.0f, RootRectTr.pivot.y);
             }
             if (defaultMin.y < 0.0f)
             {
-                rootRectTr.pivot = new(rootRectTr.pivot.x, 0.0f);
+                RootRectTr.pivot = new(RootRectTr.pivot.x, 0.0f);
             }
             else
             {
-                rootRectTr.pivot = new(rootRectTr.pivot.x, 1.0f);
+                RootRectTr.pivot = new(RootRectTr.pivot.x, 1.0f);
             }
         }
 
