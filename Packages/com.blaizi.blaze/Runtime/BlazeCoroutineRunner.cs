@@ -35,6 +35,29 @@ namespace Blaze.Runtime
         }
     }
 
+    // public class BlazeWaitForCoroutine : IBlazeYieldInstruction
+    // {
+    //     public BlazeCoroutine coroutine;
+
+    //     public BlazeWaitForCoroutine(BlazeCoroutine coroutine)
+    //     {
+    //         this.coroutine = coroutine;
+    //     }
+
+    //     public bool KeepWaiting
+    //     {
+    //         get
+    //         {
+    //             return coroutine.MoveNext();
+    //         }
+    //     }
+
+    //     public void Step()
+    //     {
+            
+    //     }
+    // }
+
     public class BlazeCoroutine
     {
         private readonly Stack<IEnumerator> m_Stack = new();
@@ -148,7 +171,7 @@ namespace Blaze.Runtime
 
         #region BaseMethods
 
-        public virtual BlazeCoroutine BRunCoroutine(IEnumerator routine)
+        public virtual BlazeCoroutine BStartCoroutine(IEnumerator routine)
         {
             var coroutine = new BlazeCoroutine(routine);
             m_Coroutines.Add(coroutine);
@@ -260,7 +283,7 @@ namespace Blaze.Runtime
 
         public virtual BlazeCoroutine StartWaitOnCondition(System.Func<bool> condition)
         {
-            return BRunCoroutine(DoWaitOnCondition(condition));
+            return BStartCoroutine(DoWaitOnCondition(condition));
         }
 
         IEnumerator DoWaitOnCondition(System.Func<bool> condition)

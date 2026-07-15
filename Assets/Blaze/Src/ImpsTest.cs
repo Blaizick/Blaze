@@ -10,16 +10,24 @@ namespace Blaze.Test
     {
         public CanvasGroup canvasGroup;
         public TextScreen textScreen;
+        public Blaze.Runtime.World.BlazeGrid grid;
 
         public void Awake()
         {
-            BlazeCoroutineRunner.Instance.BRunCoroutine(Coroutine2());
-            BlazeCoroutineRunner.Instance.BRunCoroutine(Coroutine());
+            BlazeCoroutineRunner.Instance.BStartCoroutine(Coroutine2());
+            BlazeCoroutineRunner.Instance.BStartCoroutine(Coroutine());
             // BlazeCoroutineRunner.Instance.StartCoroutine();
         }
 
         public IEnumerator Coroutine()
         {
+            grid.size = new(16, 16);
+            yield return grid.Init();
+            grid.Resize(new(4, 4));
+            grid.Resize(new(16, 16));
+            // yield return new WaitForSeconds(1.0f);
+            // yield return grid.Resize(new(32, 32));
+
             yield return canvasGroup.QFade(0.0f, 1.0f).WaitForCompletion();            
             yield return canvasGroup.QFade(1.0f, 1.0f).WaitForCompletion();            
             
