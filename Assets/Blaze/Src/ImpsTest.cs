@@ -14,8 +14,12 @@ namespace Blaze.Test
 
         public void Awake()
         {
-            BlazeCoroutineRunner.Instance.BStartCoroutine(Coroutine2());
-            BlazeCoroutineRunner.Instance.BStartCoroutine(Coroutine());
+            QDebugBase<InternalLogChannel>.Verbose = true;
+            QDebugBase<InternalLogChannel>.EnableChannels(InternalLogChannel.All);
+
+            // this.QStartCoroutine(Coroutine2());
+            // this.QStartCoroutine(Coroutine());
+            
             // BlazeCoroutineRunner.Instance.StartCoroutine();
         }
 

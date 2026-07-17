@@ -59,13 +59,15 @@ namespace Blaze.Runtime
     //     }
     // }
 
-    public class BlazeCoroutine
+    public class QCoroutine
     {
         private readonly Stack<IEnumerator> m_Stack = new();
+        public object _object;
 
-        public BlazeCoroutine(IEnumerator root)
+        public QCoroutine(IEnumerator root, object _object = null)
         {
             m_Stack.Push(root);
+            this._object = _object;
         }
 
         public bool MoveNext()
@@ -111,8 +113,10 @@ namespace Blaze.Runtime
 
     public class QCoroutineRunner : Singleton<QCoroutineRunner>
     {
-        private List<BlazeCoroutine> m_Coroutines = new();
-        private List<BlazeCoroutine> m_PausedCoroutines = new();
+        private List<QCoroutine> m_Coroutines = new();
+        private List<QCoroutine> m_PausedCoroutines = new();
+
+        private Dictionary<object, List<QCoroutine>> m_CoroutinesDic = new();
 
         public static bool customUpdate = false;
 
@@ -120,7 +124,7 @@ namespace Blaze.Runtime
         {
             SceneManager.sceneUnloaded += scene =>
             {
-                BStopAllCoroutines();
+                QStopAllCoroutines();
             };
         }
 
@@ -145,56 +149,99 @@ namespace Blaze.Runtime
 
         #region BaseMethods
 
-        public virtual BlazeCoroutine BStartCoroutine(IEnumerator routine)
+        protected static List<QCoroutine> GetAttachedCoroutines(object _object)
         {
-            var coroutine = new BlazeCoroutine(routine);
-            m_Coroutines.Add(coroutine);
+            if (!Instance.m_CoroutinesDic.TryGetValue(_object, out var list))
+            {
+                list = new();
+                Instance.m_CoroutinesDic[_object] = list;
+            }
+            return list;
+        }
+
+        public static QCoroutine QStartCoroutine(IEnumerator routine)
+        {
+            var coroutine = new QCoroutine(routine);
+            Instance.m_Coroutines.Add(coroutine);
+            return coroutine;
+        }
+
+        public static QCoroutine QStartCoroutine(object _object, IEnumerator routine)
+        {
+            var coroutine = QStartCoroutine(routine);
+            GetAttachedCoroutines(_object).Add(coroutine);
             return coroutine;
         }
         
-        public virtual void BPauseCoroutine(BlazeCoroutine coroutine)
+        public static void QPauseCoroutine(QCoroutine coroutine)
         {
-            int coroutineIndex = m_Coroutines.IndexOf(coroutine);
-            if (!m_PausedCoroutines.Contains(coroutine) && 
+            int coroutineIndex = Instance.m_Coroutines.IndexOf(coroutine);
+            if (!Instance.m_PausedCoroutines.Contains(coroutine) && 
                 coroutineIndex > -1)
             {
-                m_Coroutines.RemoveAt(coroutineIndex);
-                m_PausedCoroutines.Add(coroutine);
+                Instance.m_Coroutines.RemoveAt(coroutineIndex);
+                Instance.m_PausedCoroutines.Add(coroutine);
             }
         }
 
-        public virtual void BUnpauseCoroutine(BlazeCoroutine coroutine)
+        public static void QPauseCoroutine(object _object, QCoroutine coroutine)
         {
-            var pausedIndex = m_PausedCoroutines.IndexOf(coroutine);
+            QPauseCoroutine(coroutine);
+        }
+
+        public static void QUnpauseCoroutine(QCoroutine coroutine)
+        {
+            var pausedIndex = Instance.m_PausedCoroutines.IndexOf(coroutine);
             if (pausedIndex > -1 && 
-                !m_Coroutines.Contains(coroutine))
+                !Instance.m_Coroutines.Contains(coroutine))
             {
-                m_PausedCoroutines.RemoveAt(pausedIndex);
-                m_Coroutines.Add(coroutine);
+                Instance.m_PausedCoroutines.RemoveAt(pausedIndex);
+                Instance.m_Coroutines.Add(coroutine);
             }
         }
 
-        public virtual void BStopCoroutine(BlazeCoroutine coroutine)
+        public static void QUnpauseCoroutine(object _object, QCoroutine coroutine)
         {
-            int coroutineIndex = m_Coroutines.IndexOf(coroutine);
+            QUnpauseCoroutine(coroutine);
+        }
+
+        public static void QStopCoroutine(QCoroutine coroutine)
+        {
+            int coroutineIndex = Instance.m_Coroutines.IndexOf(coroutine);
             if (coroutineIndex > -1)
             {
-                m_Coroutines.RemoveAt(coroutineIndex);
+                Instance.m_Coroutines.RemoveAt(coroutineIndex);
             }
             else
             {
-                int pausedIndex = m_PausedCoroutines.IndexOf(coroutine);
+                int pausedIndex = Instance.m_PausedCoroutines.IndexOf(coroutine);
                 if (pausedIndex > -1)
                 {
-                    m_PausedCoroutines.RemoveAt(pausedIndex);
+                    Instance.m_PausedCoroutines.RemoveAt(pausedIndex);
                 }
             }
         }
 
-        public virtual void BStopAllCoroutines()
+        public static void QStopCoroutine(object _object, QCoroutine coroutine)
         {
-            m_Coroutines.Clear();
-            m_PausedCoroutines.Clear();
+            QStopCoroutine(coroutine);
+            GetAttachedCoroutines(_object).Remove(coroutine);
+        }
+
+        public static void QStopAllCoroutines()
+        {
+            Instance.m_Coroutines.Clear();
+            Instance.m_PausedCoroutines.Clear();
+            Instance.m_CoroutinesDic.Clear();
+        }
+
+        public static void QStopAllCoroutines(object _object)
+        {
+            foreach (var coroutine in GetAttachedCoroutines(_object))
+            {
+                QStopCoroutine(coroutine);
+            }
+            Instance.m_CoroutinesDic[_object].Clear();
         }
 
         #endregion
@@ -250,14 +297,14 @@ namespace Blaze.Runtime
         #endregion
 
         #region WaitOnCondition
-        public static BlazeCoroutine WaitOnCondition(System.Func<bool> condition)
+        public static QCoroutine WaitOnCondition(System.Func<bool> condition)
         {
             return Instance.StartWaitOnCondition(condition);
         }
 
-        public virtual BlazeCoroutine StartWaitOnCondition(System.Func<bool> condition)
+        public virtual QCoroutine StartWaitOnCondition(System.Func<bool> condition)
         {
-            return BStartCoroutine(DoWaitOnCondition(condition));
+            return QStartCoroutine(DoWaitOnCondition(condition));
         }
 
         IEnumerator DoWaitOnCondition(System.Func<bool> condition)
@@ -268,5 +315,33 @@ namespace Blaze.Runtime
             }
         }
         #endregion
+    }
+
+    public static class ObjectExtensions
+    {
+        public static QCoroutine QStartCoroutine(this object _object, IEnumerator routine)
+        {
+            return QCoroutineRunner.QStartCoroutine(_object, routine);
+        }
+        
+        public static void QPauseCoroutine(this object _object, QCoroutine coroutine)
+        {
+            QCoroutineRunner.QPauseCoroutine(_object, coroutine);
+        }
+
+        public static void QUnpauseCoroutine(this object _object, QCoroutine coroutine)
+        {
+            QCoroutineRunner.QUnpauseCoroutine(_object, coroutine);
+        }
+
+        public static void QStopCoroutine(this object _object, QCoroutine coroutine)
+        {
+            QCoroutineRunner.QStopCoroutine(_object, coroutine);
+        }
+
+        public static void QStopAllCoroutines(this object _object)
+        {
+            QCoroutineRunner.QStopAllCoroutines(_object);
+        }
     }
 }
