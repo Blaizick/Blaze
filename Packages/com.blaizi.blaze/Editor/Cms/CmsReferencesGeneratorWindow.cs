@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using Blaze.Runtime.Cms;
 using System;
+using Blaze.Runtime;
 
 namespace Blaze.Editor.Cms
 {
@@ -47,7 +48,7 @@ namespace Blaze.Editor.Cms
                 }
             }
             AssetDatabase.SaveAssets();
-            Debug.Log(debugSb);
+            Debug.Log(debugSb.ToString());
         }
     }
 

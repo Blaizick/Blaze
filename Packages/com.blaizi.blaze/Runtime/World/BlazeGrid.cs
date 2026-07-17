@@ -37,7 +37,7 @@ namespace Blaze.Runtime.World
             tile.grid = this;
             tile.gridPosition = pos;
 
-            BlazeCoroutineRunner.Instance.StartCoroutine(tile.Init());
+            QCoroutineRunner.Instance.StartCoroutine(tile.Init());
         }
 
         public virtual void DestroyTile(Vector2Int pos)

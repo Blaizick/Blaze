@@ -215,7 +215,7 @@ namespace Blaze.Runtime.Cms
                     sb.Append(", ");
                 }
             }
-            Debug.Log(sb);
+            QDebugBase<InternalLogChannel>.VerboseLog(InternalLogChannel.System, sb.ToString());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

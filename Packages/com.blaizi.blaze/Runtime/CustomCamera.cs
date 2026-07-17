@@ -1,28 +1,32 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using Unity.Cinemachine;
 
 namespace Blaze.Runtime
 {
     public class CustomCamera : MonoBehaviour
     {
-        public CinemachineCamera cinemachineCamera;
+        public Camera _camera;
         public float targetZoom;
         public float zoomSpeed;
         
+        [SerializeField]
+        public bool customUpdate;
+
         public void Init()
         {
-            targetZoom = cinemachineCamera.Lens.OrthographicSize;
+            targetZoom = _camera.orthographicSize;
         }
+        public void _Update()
+        {
+            _camera.orthographicSize = Mathf.MoveTowards(_camera.orthographicSize, targetZoom, zoomSpeed * Time.unscaledDeltaTime);
+        }
+
         public void Update()
         {
-            cinemachineCamera.Lens.OrthographicSize = Mathf.MoveTowards(cinemachineCamera.Lens.OrthographicSize, targetZoom, zoomSpeed * Time.deltaTime);
-            if (TryGetComponent(out CinemachineConfiner2D c))
-            {
-                c.InvalidateLensCache();
-            }
+            _Update();
         }
+
         public float Zoom
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,7 +38,7 @@ namespace Blaze.Runtime
             set
             {
                 targetZoom = value;
-                cinemachineCamera.Lens.OrthographicSize = value;                
+                _camera.orthographicSize = value;                
             }
         }
     }

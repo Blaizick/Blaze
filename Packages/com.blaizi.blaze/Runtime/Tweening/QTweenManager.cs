@@ -8,39 +8,17 @@ using UnityEngine.SceneManagement;
 
 namespace Blaze.Runtime.Tweening
 {
-    public class QTweenManager : MonoBehaviour
+    public class QTweenManager : Singleton<QTweenManager>
     {
-        private static bool s_TweenManagerInstanceCreated = false;
-        private static QTweenManager s_TweenManagerInstance = null;
-        
-        public static QTweenManager Instance
-        {
-            get
-            {
-                if (s_TweenManagerInstance == null)
-                {
-                    if (!s_TweenManagerInstanceCreated)
-                    {
-                        var go = new GameObject("Q Tween Manager");
-                        s_TweenManagerInstance = go.AddComponent<QTweenManager>();
-                        DontDestroyOnLoad(go);
-                        s_TweenManagerInstance.Init();
-                        s_TweenManagerInstanceCreated = true;
-                    }
-                }
-                return s_TweenManagerInstance;
-            }
-        }
         private List<IQTweenCore> m_Tweens = new();
 
         public static bool customUpdate = false;
 
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void ResetStatistics()
+        [RuntimeInitializeOnLoadMethod]
+        public static void PreInit()
         {
-            s_TweenManagerInstance = null;
-            s_TweenManagerInstanceCreated = false;
+            quittingCheck = true;
+            s_IsQuitting = false;
         }
 
         public void Update()

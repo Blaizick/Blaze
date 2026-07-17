@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,18 +6,18 @@ using UnityEngine.SceneManagement;
 
 namespace Blaze.Runtime 
 {
-    public interface IBlazeYieldInstruction
+    public interface IQYieldInstruction
     {
         public bool KeepWaiting { get; }
         public void Step();
     }
 
-    public class BlazeWaitForSeconds : IBlazeYieldInstruction
+    public class QWaitForSeconds : IQYieldInstruction
     {
         public float progress = 0.0f;
         public float duration = 0.0f;
 
-        public BlazeWaitForSeconds(float seconds)
+        public QWaitForSeconds(float seconds)
         {
             this.duration = seconds;
         }
@@ -86,7 +87,7 @@ namespace Blaze.Runtime
                         m_Stack.Push(nested);
                         continue;
                     }
-                    case IBlazeYieldInstruction wait:
+                    case IQYieldInstruction wait:
                     {
                         wait.Step();
 
@@ -108,41 +109,14 @@ namespace Blaze.Runtime
         }
     }
 
-    public class BlazeCoroutineRunner : MonoBehaviour
+    public class QCoroutineRunner : Singleton<QCoroutineRunner>
     {
-        private static BlazeCoroutineRunner s_Instance = null;
-        public static BlazeCoroutineRunner Instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    if (!s_InstanceCreated)
-                    {
-                        var go = new GameObject("Blaze Coroutine Runner");
-                        s_Instance = go.AddComponent<BlazeCoroutineRunner>();
-                        s_Instance.Init();
-                        DontDestroyOnLoad(go);
-                    }
-                }
-                return s_Instance;
-            }
-        }
-        private static bool s_InstanceCreated = false;
-
         private List<BlazeCoroutine> m_Coroutines = new();
         private List<BlazeCoroutine> m_PausedCoroutines = new();
 
         public static bool customUpdate = false;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void ResetStatistics()
-        {
-            s_Instance = null;
-            s_InstanceCreated = false;
-        }
-
-        public virtual void Init()
+        public virtual void Awake()
         {
             SceneManager.sceneUnloaded += scene =>
             {
