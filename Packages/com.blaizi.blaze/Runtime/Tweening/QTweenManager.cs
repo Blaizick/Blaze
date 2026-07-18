@@ -21,15 +21,17 @@ namespace Blaze.Runtime.Tweening
             s_IsQuitting = false;
         }
 
-        public void Update()
+        public override void Update()
         {
             if (!customUpdate)
             {
                 QUpdate();
             }
+
+            base.Update();
         }
 
-        public void QUpdate()
+        public virtual void QUpdate()
         {
             for (int i = 0; i < m_Tweens.Count; i++)
             {

@@ -1,41 +1,104 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Blaze.Runtime.World
 {
-    public class BlazeGrid : MonoBehaviour
+    public class BlazeGrid : ManagedBehaviour
     {
-        public Vector2Int size;
-        public BlazeTile tilePfb;
+        [SerializeField]
+        protected Vector2Int m_Size;
+        [SerializeField]
+        protected BlazeTile m_TilePfb;
 
-        public UnityEvent onResize = new();
+        [SerializeField]
+        protected UnityEvent m_OnResize = new();
 
         protected List<BlazeTile> m_Tiles = new();
 
-        public virtual IEnumerator Init()
+        public virtual Vector2Int Size
         {
-            m_Tiles = new(new BlazeTile[size.x * size.y]);
-
-            for (int x = 0; x < size.x; x++)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
             {
-                for (int y = 0; y < size.y; y++)
+                return m_Size;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                m_Size = value;
+            }
+        }
+        public virtual BlazeTile TilePfb
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return m_TilePfb;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                m_TilePfb = value;
+            }
+        }
+        public virtual UnityEvent OnResize
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return m_OnResize;
+            }
+        }
+        public virtual IReadOnlyList<BlazeTile> Tiles 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return m_Tiles.AsReadOnly();
+            }
+        }
+
+        public virtual Vector2 CenterPosition
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                Vector2 pos = (Vector2)transform.position + new Vector2(Size.x / 2, Size.y / 2);
+                if (Size.x % 2 == 0)
+                {
+                    pos.x -= 0.5f;
+                }
+                if (Size.y % 2 == 0)
+                {
+                    pos.y -= 0.5f;
+                }
+                return pos;
+            }
+        }
+
+        public virtual void Init()
+        {
+            m_Tiles = new(new BlazeTile[Size.x * Size.y]);
+
+            for (int x = 0; x < Size.x; x++)
+            {
+                for (int y = 0; y < Size.y; y++)
                 {
                     CreateTile(new Vector2Int(x, y));
                 }
             }
-
-            yield break;
         }
 
-        public virtual void CreateTile(Vector2Int pos)
+        public virtual void CreateTile(Vector2Int position)
         {
-            var tile = Instantiate(tilePfb, GridToWorldPosition(pos), Quaternion.identity, transform);
-            m_Tiles[pos.x + pos.y * size.x] = tile;
+            var tile = Instantiate(GetTilePfbForPosition(position), GridToWorldPosition(position), Quaternion.identity, transform);
+            m_Tiles[position.x + position.y * Size.x] = tile;
 
             tile.grid = this;
-            tile.gridPosition = pos;
+            tile.gridPosition = position;
 
             QCoroutineRunner.Instance.StartCoroutine(tile.Init());
         }
@@ -69,7 +132,7 @@ namespace Blaze.Runtime.World
 
         public virtual void Resize(Vector2Int newSize)
         {
-            Vector2Int oldSize = size;
+            Vector2Int oldSize = Size;
 
             Vector2Int minSize = new Vector2Int(Mathf.Min(oldSize.x, newSize.x), Mathf.Min(oldSize.y, newSize.y));
             Vector2Int maxSize = new Vector2Int(Mathf.Max(oldSize.x, newSize.x), Mathf.Max(oldSize.y, newSize.y));
@@ -98,7 +161,7 @@ namespace Blaze.Runtime.World
                 }
             }
 
-            size = newSize;
+            Size = newSize;
             m_Tiles = newTiles;
 
             // Create new tiles.
@@ -113,7 +176,7 @@ namespace Blaze.Runtime.World
                 }
             }
 
-            onResize.Invoke();
+            m_OnResize.Invoke();
         }
 
         public virtual BlazeTile GetTileAt(int i)
@@ -122,7 +185,7 @@ namespace Blaze.Runtime.World
         }
         public virtual BlazeTile GetTileAt(Vector2Int pos)
         {
-            if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y)
+            if (pos.x < 0 || pos.y < 0 || pos.x >= Size.x || pos.y >= Size.y)
             {
                 return null;
             }
@@ -183,16 +246,22 @@ namespace Blaze.Runtime.World
         public virtual bool IsPositionInBounds(Vector2Int pos)
         {
             if (pos.x < 0 || pos.y < 0 ||
-                pos.x >= this.size.x || pos.y >= this.size.y)
+                pos.x >= this.Size.x || pos.y >= this.Size.y)
             {
                 return false;
             }
             return true;
         }
 
+
+        public virtual bool IsRectInBounds(RectInt rect)
+        {
+            return rect.xMin >= 0 && rect.yMin >= 0 && rect.xMax < Size.x && rect.yMax < Size.y;
+        }
+
         public virtual int GridPosToI(Vector2Int gPos)
         {
-            return gPos.x + gPos.y * size.x;
+            return gPos.x + gPos.y * Size.x;
         }
 
         public virtual Vector2 GetPosition()
@@ -200,21 +269,9 @@ namespace Blaze.Runtime.World
             return CenterPosition;
         }
 
-        public virtual Vector2 CenterPosition
+        protected virtual BlazeTile GetTilePfbForPosition(Vector2Int position)
         {
-            get
-            {
-                Vector2 pos = (Vector2)transform.position + new Vector2(size.x / 2, size.y / 2);
-                if (size.x % 2 == 0)
-                {
-                    pos.x -= 0.5f;
-                }
-                if (size.y % 2 == 0)
-                {
-                    pos.y -= 0.5f;
-                }
-                return pos;
-            }
+            return TilePfb;
         }
     }
 }

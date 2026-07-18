@@ -1,10 +1,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Blaze.Runtime
 {
-    public class CustomCamera : MonoBehaviour
+    public class CustomCamera : ManagedBehaviour
     {
         public Camera _camera;
         public float targetZoom;
@@ -22,9 +23,10 @@ namespace Blaze.Runtime
             _camera.orthographicSize = Mathf.MoveTowards(_camera.orthographicSize, targetZoom, zoomSpeed * Time.unscaledDeltaTime);
         }
 
-        public void Update()
+        public override void Update()
         {
             _Update();
+            base.Update();
         }
 
         public float Zoom

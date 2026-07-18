@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Blaze.Runtime.Ui
 {
-    public class Popup : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+    public class Popup : ManagedBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         public TMP_Text titleText;
         public TMP_Text descText;
@@ -31,7 +31,7 @@ namespace Blaze.Runtime.Ui
             m_Canvas = GetComponentInParent<Canvas>();
         }
 
-        private void Update()
+        public override void Update()
         {
             if (!m_Dragging)
             {
@@ -53,6 +53,8 @@ namespace Blaze.Runtime.Ui
             }
 
             m_RectTransform.anchoredPosition = targetPos;
+        
+            base.Update();
         }
 
         public void OnPointerDown(PointerEventData eventData)

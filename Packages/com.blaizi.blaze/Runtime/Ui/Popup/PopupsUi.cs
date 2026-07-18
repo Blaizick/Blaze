@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 namespace Blaze.Runtime.Ui
 {
-    public class PopupsUi : MonoBehaviour
+    public class PopupsUi : ManagedBehaviour
     {
         public PopupOptionUiCntPfb popupOptionUiCntPfb;
         public Popup popupUiCntPfb; 

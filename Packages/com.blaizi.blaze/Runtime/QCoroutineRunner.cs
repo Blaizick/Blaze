@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,29 +34,6 @@ namespace Blaze.Runtime
             progress += Time.deltaTime / duration;
         }
     }
-
-    // public class BlazeWaitForCoroutine : IBlazeYieldInstruction
-    // {
-    //     public BlazeCoroutine coroutine;
-
-    //     public BlazeWaitForCoroutine(BlazeCoroutine coroutine)
-    //     {
-    //         this.coroutine = coroutine;
-    //     }
-
-    //     public bool KeepWaiting
-    //     {
-    //         get
-    //         {
-    //             return coroutine.MoveNext();
-    //         }
-    //     }
-
-    //     public void Step()
-    //     {
-            
-    //     }
-    // }
 
     public class QCoroutine
     {
@@ -111,16 +87,12 @@ namespace Blaze.Runtime
         }
     }
 
-    public class QCoroutineRunner : Singleton<QCoroutineRunner>
+    public class QCoroutineRunnerBase
     {
         private List<QCoroutine> m_Coroutines = new();
         private List<QCoroutine> m_PausedCoroutines = new();
 
-        private Dictionary<object, List<QCoroutine>> m_CoroutinesDic = new();
-
-        public static bool customUpdate = false;
-
-        public virtual void Awake()
+        public virtual void QInit()
         {
             SceneManager.sceneUnloaded += scene =>
             {
@@ -128,7 +100,7 @@ namespace Blaze.Runtime
             };
         }
 
-        public virtual void BUpdate()
+        public virtual void QUpdate()
         {
             for (int i = m_Coroutines.Count - 1; i >= 0; i--)
             {
@@ -139,113 +111,64 @@ namespace Blaze.Runtime
             }
         }
 
-        public virtual void Update()
-        {
-            if (!customUpdate)
-            {
-                BUpdate();
-            }
-        }
-
         #region BaseMethods
 
-        protected static List<QCoroutine> GetAttachedCoroutines(object _object)
-        {
-            if (!Instance.m_CoroutinesDic.TryGetValue(_object, out var list))
-            {
-                list = new();
-                Instance.m_CoroutinesDic[_object] = list;
-            }
-            return list;
-        }
-
-        public static QCoroutine QStartCoroutine(IEnumerator routine)
+        public virtual QCoroutine QStartCoroutine(IEnumerator routine)
         {
             var coroutine = new QCoroutine(routine);
-            Instance.m_Coroutines.Add(coroutine);
+            m_Coroutines.Add(coroutine);
             return coroutine;
         }
 
-        public static QCoroutine QStartCoroutine(object _object, IEnumerator routine)
+        public virtual void QPauseCoroutine(QCoroutine coroutine)
         {
-            var coroutine = QStartCoroutine(routine);
-            GetAttachedCoroutines(_object).Add(coroutine);
-            return coroutine;
-        }
-        
-        public static void QPauseCoroutine(QCoroutine coroutine)
-        {
-            int coroutineIndex = Instance.m_Coroutines.IndexOf(coroutine);
-            if (!Instance.m_PausedCoroutines.Contains(coroutine) && 
+            int coroutineIndex = m_Coroutines.IndexOf(coroutine);
+            if (!m_PausedCoroutines.Contains(coroutine) && 
                 coroutineIndex > -1)
             {
-                Instance.m_Coroutines.RemoveAt(coroutineIndex);
-                Instance.m_PausedCoroutines.Add(coroutine);
+                m_Coroutines.RemoveAt(coroutineIndex);
+                m_PausedCoroutines.Add(coroutine);
             }
         }
 
-        public static void QPauseCoroutine(object _object, QCoroutine coroutine)
+        public virtual void QUnpauseCoroutine(QCoroutine coroutine)
         {
-            QPauseCoroutine(coroutine);
-        }
-
-        public static void QUnpauseCoroutine(QCoroutine coroutine)
-        {
-            var pausedIndex = Instance.m_PausedCoroutines.IndexOf(coroutine);
+            var pausedIndex = m_PausedCoroutines.IndexOf(coroutine);
             if (pausedIndex > -1 && 
-                !Instance.m_Coroutines.Contains(coroutine))
+                !m_Coroutines.Contains(coroutine))
             {
-                Instance.m_PausedCoroutines.RemoveAt(pausedIndex);
-                Instance.m_Coroutines.Add(coroutine);
+                m_PausedCoroutines.RemoveAt(pausedIndex);
+                m_Coroutines.Add(coroutine);
             }
         }
-
-        public static void QUnpauseCoroutine(object _object, QCoroutine coroutine)
+        public virtual void QStopCoroutine(QCoroutine coroutine)
         {
-            QUnpauseCoroutine(coroutine);
-        }
-
-        public static void QStopCoroutine(QCoroutine coroutine)
-        {
-            int coroutineIndex = Instance.m_Coroutines.IndexOf(coroutine);
+            int coroutineIndex = m_Coroutines.IndexOf(coroutine);
             if (coroutineIndex > -1)
             {
-                Instance.m_Coroutines.RemoveAt(coroutineIndex);
+                m_Coroutines.RemoveAt(coroutineIndex);
             }
             else
             {
-                int pausedIndex = Instance.m_PausedCoroutines.IndexOf(coroutine);
+                int pausedIndex = m_PausedCoroutines.IndexOf(coroutine);
                 if (pausedIndex > -1)
                 {
-                    Instance.m_PausedCoroutines.RemoveAt(pausedIndex);
+                    m_PausedCoroutines.RemoveAt(pausedIndex);
                 }
             }
         }
 
-        public static void QStopCoroutine(object _object, QCoroutine coroutine)
+        public virtual void QStopAllCoroutines()
         {
-            QStopCoroutine(coroutine);
-            GetAttachedCoroutines(_object).Remove(coroutine);
-        }
-
-        public static void QStopAllCoroutines()
-        {
-            Instance.m_Coroutines.Clear();
-            Instance.m_PausedCoroutines.Clear();
-            Instance.m_CoroutinesDic.Clear();
-        }
-
-        public static void QStopAllCoroutines(object _object)
-        {
-            foreach (var coroutine in GetAttachedCoroutines(_object))
-            {
-                QStopCoroutine(coroutine);
-            }
-            Instance.m_CoroutinesDic[_object].Clear();
+            m_Coroutines.Clear();
+            m_PausedCoroutines.Clear();
         }
 
         #endregion
+    }
 
+    public class QCoroutineRunner : Singleton<QCoroutineRunner>
+    {
 	    #region WaitOnConditionThenExecute
 	    public static void WaitOnConditionThenExecute(System.Func<bool> condition, System.Action action)
 	    {
@@ -315,33 +238,5 @@ namespace Blaze.Runtime
             }
         }
         #endregion
-    }
-
-    public static class ObjectExtensions
-    {
-        public static QCoroutine QStartCoroutine(this object _object, IEnumerator routine)
-        {
-            return QCoroutineRunner.QStartCoroutine(_object, routine);
-        }
-        
-        public static void QPauseCoroutine(this object _object, QCoroutine coroutine)
-        {
-            QCoroutineRunner.QPauseCoroutine(_object, coroutine);
-        }
-
-        public static void QUnpauseCoroutine(this object _object, QCoroutine coroutine)
-        {
-            QCoroutineRunner.QUnpauseCoroutine(_object, coroutine);
-        }
-
-        public static void QStopCoroutine(this object _object, QCoroutine coroutine)
-        {
-            QCoroutineRunner.QStopCoroutine(_object, coroutine);
-        }
-
-        public static void QStopAllCoroutines(this object _object)
-        {
-            QCoroutineRunner.QStopAllCoroutines(_object);
-        }
     }
 }

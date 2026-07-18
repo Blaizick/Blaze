@@ -4,7 +4,7 @@ using Blaze.Runtime.Tweening;
 
 namespace Blaze.Runtime.Ui
 {
-    public class PunchOnClickObject : MonoBehaviour
+    public class PunchOnClickObject : ManagedBehaviour
     {
         private QTween m_PunchTween;
 

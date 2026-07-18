@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Blaze.Runtime.Ui
 {
-    public class TooltipTrigger : MonoBehaviour
+    public class TooltipTrigger : ManagedBehaviour
     {
         public string title;
         public string description;

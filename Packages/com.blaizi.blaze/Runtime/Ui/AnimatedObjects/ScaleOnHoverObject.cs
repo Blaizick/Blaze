@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Blaze.Runtime.Ui
 {
-    public class ScaleOnHoverObject : MonoBehaviour
+    public class ScaleOnHoverObject : ManagedBehaviour
     {
         private QTween m_Tween;
 

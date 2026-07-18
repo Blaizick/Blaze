@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Blaze.Runtime
 {
-    public abstract class Singleton<T> : MonoBehaviour where T : Component
+    public abstract class Singleton<T> : ManagedBehaviour where T : Component
 	{
         protected static bool s_IsQuitting = false;
 

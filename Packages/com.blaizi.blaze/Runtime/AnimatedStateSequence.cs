@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Blaze.Runtime
 {
-    public class AnimatedStateSequence : MonoBehaviour
+    public class AnimatedStateSequence : ManagedBehaviour
     {
         [SerializeField]
         private State[] m_States = Array.Empty<State>();
@@ -136,12 +136,13 @@ namespace Blaze.Runtime
             }
         }
 
-        public virtual void Update()
+        public override void Update()
         {
             if (!CustomUpdate)
             {
                 _Update();
             }
+            base.Update();
         }
 
         public virtual void _Update()

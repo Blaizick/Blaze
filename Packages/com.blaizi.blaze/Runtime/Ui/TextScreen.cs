@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace Blaze.Runtime.Ui
 {
-    public class TextScreen : MonoBehaviour, IPointerClickHandler
+    public class TextScreen : ManagedBehaviour, IPointerClickHandler
     {
         public GameObject root;
         public TextTypewriter typewriter;
@@ -34,7 +34,7 @@ namespace Blaze.Runtime.Ui
             clickTooltipCanvasGroup.QKill();
         }
 
-        public virtual void Update()
+        public override void Update()
         {
             if (clickTooltip)
             {
@@ -75,6 +75,7 @@ namespace Blaze.Runtime.Ui
                     }
                 }
             }
+            base.Update();
         }
 
         public virtual void OnPointerClick(PointerEventData eventData)

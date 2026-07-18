@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace Blaze.Runtime.Ui
 {
-    public class TextTypewriter : MonoBehaviour, IPointerClickHandler, IEventSystemHandler
+    public class TextTypewriter : ManagedBehaviour, IPointerClickHandler, IEventSystemHandler
     {
         public TMP_Text targetText;
 

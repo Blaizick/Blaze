@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace Blaze.Runtime.Ui
 {
-    public class CheckButton : MonoBehaviour
+    public class CheckButton : ManagedBehaviour
     {
         public GameObject root;
 
@@ -41,10 +41,12 @@ namespace Blaze.Runtime.Ui
             Update();
         }
 
-        public virtual void Update()
+        public override void Update()
         {
             activeState.root.SetActive(active);
             notActiveState.root.SetActive(!active);
+        
+            base.Update();
         }
     }
 }

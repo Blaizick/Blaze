@@ -4,7 +4,7 @@ using UnityEngine.Audio;
 
 namespace Blaze.Runtime.Audio
 {
-    public class AudioManager : MonoBehaviour
+    public class AudioManager : Singleton<AudioManager>
     {
         private Dictionary<AudioClip, AudioSource> m_SourcesDic = new();
         public AudioMixer mixer;

@@ -3,7 +3,7 @@ using UnityEngine.Tilemaps;
 
 namespace Blaze.Runtime
 {
-    public class ShadowTilemap : MonoBehaviour
+    public class ShadowTilemap : ManagedBehaviour
     {
         public Tilemap tilemap;
         public Tilemap shadowTilemap;

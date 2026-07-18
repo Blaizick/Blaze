@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 namespace Blaze.Runtime.Ui
 {
-    public class Tooltip : MonoBehaviour
+    public class Tooltip : ManagedBehaviour
     {
         public TMP_Text title;
         public TMP_Text description;
@@ -36,7 +36,7 @@ namespace Blaze.Runtime.Ui
             
         }
 
-        public virtual void Update()
+        public override void Update()
         {
             RootRectTr.anchoredPosition = Mouse.current.position.ReadValue();
 
@@ -59,6 +59,8 @@ namespace Blaze.Runtime.Ui
             {
                 RootRectTr.pivot = new(RootRectTr.pivot.x, 1.0f);
             }
+
+            base.Update();
         }
 
         public virtual void OnDestroy()
