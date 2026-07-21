@@ -30,8 +30,8 @@ namespace Blaze.Runtime.Ui
 
         public virtual void OnDestroy()
         {
-            canvasGroup.QKill();
-            clickTooltipCanvasGroup.QKill();
+            QTween.CompleteAll(canvasGroup);
+            QTween.CompleteAll(clickTooltipCanvasGroup);
         }
 
         public override void Update()
@@ -42,14 +42,10 @@ namespace Blaze.Runtime.Ui
                 {
                     if (!clickTooltipActive)
                     {
-                        if (QTweenUtils.IsTweenActive(clickTooltipTween))
-                        {
-                            clickTooltipTween.Complete();
-                        }
+                        clickTooltipTween.Complete();
                         clickTooltipRoot.gameObject.SetActive(true);
                         clickTooltipCanvasGroup.alpha = 0.0f;
-                        clickTooltipTween = clickTooltipCanvasGroup.
-                            QFade(1.0f, 0.25f).
+                        clickTooltipTween = QTween.Alpha(clickTooltipCanvasGroup, clickTooltipCanvasGroup.alpha, 1.0f, 0.25f).
                             SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
                         clickTooltipActive = true;
                     }
@@ -58,14 +54,10 @@ namespace Blaze.Runtime.Ui
                 {
                     if (clickTooltipActive)
                     {
-                        if (QTweenUtils.IsTweenActive(clickTooltipTween))
-                        {
-                            clickTooltipTween.Complete();
-                        }
+                        clickTooltipTween.Complete();
                         clickTooltipRoot.gameObject.SetActive(true);
                         clickTooltipCanvasGroup.alpha = 1.0f;
-                        clickTooltipTween = clickTooltipCanvasGroup.
-                            QFade(0.0f, 0.25f).
+                        clickTooltipTween = QTween.Alpha(clickTooltipCanvasGroup, clickTooltipCanvasGroup.alpha, 0.0f, 0.25f).
                             SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
                             OnComplete(() =>
                         {
@@ -84,14 +76,10 @@ namespace Blaze.Runtime.Ui
             {
                 if (clickTooltipActive)
                 {
-                    if (QTweenUtils.IsTweenActive(clickTooltipTween))
-                    {
-                        clickTooltipTween.Complete();
-                    }
+                    clickTooltipTween.Complete();
                     clickTooltipRoot.gameObject.SetActive(true);
                     clickTooltipCanvasGroup.alpha = 1.0f;
-                    clickTooltipTween = clickTooltipCanvasGroup.
-                        QFade(0.0f, 0.25f).
+                    clickTooltipTween = QTween.Alpha(clickTooltipCanvasGroup, canvasGroup.alpha, 0.0f, 0.25f).
                         SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
                         OnComplete(() =>
                     {
@@ -107,10 +95,7 @@ namespace Blaze.Runtime.Ui
         {
             if (clickTooltip)
             {
-                if (QTweenUtils.IsTweenActive(clickTooltipTween))
-                {
-                    clickTooltipTween.Complete();
-                }
+                clickTooltipTween.Complete();
                 clickTooltipRoot.SetActive(false);
                 clickTooltipActive = false;
             }
@@ -127,8 +112,7 @@ namespace Blaze.Runtime.Ui
         {
             HideImmediate();
             root.SetActive(true);
-            yield return canvasGroup.
-                QFade(1.0f, 0.25f).
+            yield return QTween.Alpha(canvasGroup, canvasGroup.alpha, 1.0f, 0.25f).
                 SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
                 WaitForCompletion();
             typewriter.Text = string.Empty;
@@ -137,8 +121,7 @@ namespace Blaze.Runtime.Ui
         public virtual IEnumerator HideCoroutine()
         {
             ShowImmediate();
-            yield return canvasGroup.
-                QFade(0.0f, 0.25f).
+            yield return QTween.Alpha(canvasGroup, canvasGroup.alpha, 0.0f, 0.25f).
                 SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime).
                 WaitForCompletion();
             typewriter.Text = string.Empty;

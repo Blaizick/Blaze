@@ -1,12 +1,10 @@
 {
-    "name": "com.blaizi.blaze.editor",
+    "name": "Blaze.Runtime",
     "rootNamespace": "",
     "references": [
         "GUID:49b49c76ee64f6b41bf28ef951cb0e50",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
-        "GUID:75469ad4d38634e559750d17036d5f7c",
-        "GUID:4307f53044263cf4b835bd812fc161a4",
-        "GUID:87518f0f37ea89e4da2c8b8905e94c33"
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

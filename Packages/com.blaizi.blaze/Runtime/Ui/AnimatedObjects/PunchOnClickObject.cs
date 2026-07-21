@@ -13,17 +13,14 @@ namespace Blaze.Runtime.Ui
 
         public virtual void OnDestroy()
         {
-            transform.QKill();
+            QTween.CompleteAll(transform);
         }
 
         public virtual void OnClick()
         {
             if (animationDuration > 0.0f)
             {
-                if (QTweenUtils.IsTweenActive(m_PunchTween))
-                {
-                    m_PunchTween.Complete();
-                }
+                m_PunchTween.Complete();
 
                 if (TryGetComponent(out UiScaleOnHoverObject scaleOnHoverObject))
                 {
@@ -34,8 +31,7 @@ namespace Blaze.Runtime.Ui
                     transform.localScale = Vector3.one;
                 }
                 
-                m_PunchTween = transform.
-                    QPunchLocalScale(punchEffect, animationDuration).
+                m_PunchTween = QTween.PunchLocalScale(transform, punchEffect, animationDuration).
                     SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
             }
         }

@@ -10,22 +10,17 @@ namespace Blaze.Runtime.Ui
 
         public override void OnDestroy()
         {
-            RootRectTr.QKill();
+            QTween.CompleteAll(RootRectTr);
 
             base.OnDestroy();
         }
 
         public override void Show()
         {
-            if (QTweenUtils.IsTweenActive(m_Tween))
-            {
-                m_Tween.Complete();
-            }
+            m_Tween.Complete();
             RootRectTr.localScale = Vector3.one;
-            m_Tween = RootRectTr.
-                QPunchLocalScale(new Vector3(0.1f, 0.1f, 0.0f), 0.25f).
+            m_Tween = QTween.PunchLocalScale(RootRectTr, new Vector3(0.1f, 0.1f, 0.0f), 0.25f).
                 SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
-            
             base.Show();
         }
     }

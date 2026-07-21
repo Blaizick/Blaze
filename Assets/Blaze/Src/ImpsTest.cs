@@ -33,7 +33,7 @@ namespace Blaze.Test
             var mousePos = Mouse.current.position.ReadValue();
             var mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
             var mouseGridPos = grid.WorldToGridPosition(mouseWorldPos);
-            QDebugBase<InternalLogChannel>.Log(InternalLogChannel.System, grid.IsRectInBounds(new RectInt(mouseGridPos, new Vector2Int(0, 0))).ToString());
+            // QDebugBase<InternalLogChannel>.Log(InternalLogChannel.System, grid.IsRectInBounds(new RectInt(mouseGridPos, new Vector2Int(0, 0))).ToString());
 
             base.Update();
         }
@@ -44,18 +44,18 @@ namespace Blaze.Test
             grid.Init();
             grid.Resize(new(4, 4));
             
-            yield break;
-            // grid.Resize(new(16, 16));
-            // // yield return new WaitForSeconds(1.0f);
-            // // yield return grid.Resize(new(32, 32));
+            // yield break;
+            grid.Resize(new(16, 16));
+            // yield return new WaitForSeconds(1.0f);
+            // yield return grid.Resize(new(32, 32));
 
-            // yield return canvasGroup.QFade(0.0f, 1.0f).WaitForCompletion();            
-            // yield return canvasGroup.QFade(1.0f, 1.0f).WaitForCompletion();            
+            yield return QTween.Alpha(canvasGroup, 1.0f, 0.0f, 1.0f).WaitForCompletion();            
+            yield return QTween.Alpha(canvasGroup, 0.0f, 1.0f, 1.0f).WaitForCompletion();            
             
-            // yield return textScreen.ShowCoroutine();
-            // yield return textScreen.typewriter.WriteCoroutine("dadwadasd");
-            // yield return textScreen.typewriter.WaitForClick();
-            // yield return textScreen.HideCoroutine();
+            yield return textScreen.ShowCoroutine();
+            yield return textScreen.typewriter.WriteCoroutine("dadwadasd");
+            yield return textScreen.typewriter.WaitForClick();
+            yield return textScreen.HideCoroutine();
         }
 
         public IEnumerator Coroutine2()

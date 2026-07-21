@@ -22,13 +22,9 @@ namespace Blaze.Runtime.Ui
         {
             if (animationDuration > 0.0f)
             {
-                if (QTweenUtils.IsTweenActive(m_Tween))
-                {
-                    m_Tween.Complete();
-                }
+                m_Tween.Complete();
                 transform.localScale = MinScaleVec3;
-                m_Tween = transform.
-                    QLocalScale(MaxScaleVec3, animationDuration).
+                m_Tween = QTween.LocalScale(transform, transform.localScale, MaxScaleVec3, animationDuration).
                     SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
             }
             else
@@ -42,13 +38,9 @@ namespace Blaze.Runtime.Ui
         {
             if (animationDuration > 0.0f)
             {
-                if (QTweenUtils.IsTweenActive(m_Tween))
-                {
-                    m_Tween.Complete();
-                }
+                m_Tween.Complete();
                 transform.localScale = MaxScaleVec3;
-                m_Tween = transform.
-                    QLocalScale(MinScaleVec3, animationDuration).
+                m_Tween = QTween.LocalScale(transform, transform.localScale, MinScaleVec3, animationDuration).
                     SetDeltaTimeSource(DeltaTimeSource.UnscaledDeltaTime);
             }
             else
@@ -71,7 +63,7 @@ namespace Blaze.Runtime.Ui
 
         public virtual void OnDestroy()
         {
-            transform.QKill();
+            QTween.CompleteAll(transform);
         }
     }
 }
