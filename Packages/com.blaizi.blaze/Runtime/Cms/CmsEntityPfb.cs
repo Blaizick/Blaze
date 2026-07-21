@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using TMPro;
 using UnityEngine;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace Blaze.Runtime.Cms
 {
@@ -16,200 +13,147 @@ namespace Blaze.Runtime.Cms
     {
         public string id;
         [SerializeReference, SubclassSelector]
-        public List<CmsComponent> components = new();
+        public ICmsComponent[] components = Array.Empty<ICmsComponent>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CmsEntity AsCmsEntity()
-        {
-            List<CmsComponent> allComponents = new();
-            allComponents.AddRange(components);
-            return new CmsEntity(id, new(allComponents));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CmsEntity GetCmsEntity()
         {
             return Cms.GetEntity(id);
         }
     }
 
-    public class CmsEntityBuilder
+    public interface ICmsComponent
     {
-        public string id;
-        public List<CmsComponent> components = new();
+        
+    }
 
-        public CmsEntity CmsEntity
+    public struct CmsEntityData
+    {
+        public bool created;
+        public string stringId;
+        public ICmsComponent[] components;
+        public Dictionary<Type, ICmsComponentCachePool> cacheDic;
+
+        public void Setup(string id, ICmsComponent[] components)
         {
-            get
-            {
-                return new CmsEntity(id, new(components));
-            }
+            this.created = true;
+            this.stringId = id;
+            this.components = components;
+            this.cacheDic = new();
         }
+    }
 
-        public CmsEntityBuilder WithId(string id)
+    public interface ICmsComponentCachePool
+    {
+        
+    }
+
+    public class CmsComponentCachePool<T> : ICmsComponentCachePool where T : ICmsComponent
+    {
+        public ushort[] index = Array.Empty<ushort>();
+        public T[] components = Array.Empty<T>();
+    }
+
+    public struct CmsEntity
+    {
+        public ushort id;
+
+        public CmsEntity(ushort id)
         {
             this.id = id;
-            return this; 
         }
 
-        public CmsEntityBuilder WithComponent(CmsComponent component)
-        {
-            components.Add(component);
-            return this;
-        }
-
-        public CmsEntityBuilder WithComponents(List<CmsComponent> components)
-        {
-            this.components = new(components);
-            return this;
-        }
-
-        public CmsEntityBuilder Register()
-        {
-            Cms.Push(CmsEntity);
-            return this;
-        }
-    }
-
-    public class CmsEntity
-    {
-        private string m_Id;
-        private List<CmsComponent> m_Components = new();
-        private Dictionary<Type, List<CmsComponent>> m_ComponentsCache = new();
-
-        public string Id => m_Id;
-        public IReadOnlyList<CmsComponent> Components => m_Components.AsReadOnly();
-
-        public CmsEntity()
-        {
-            
-        }
-
-        public CmsEntity(string id, List<CmsComponent> components)
-        {
-            m_Id = id;
-            m_Components = components;
-            InvalidateComponentsCache();
-        }
-
-        public void InvalidateComponentsCache()
-        {
-            m_ComponentsCache.Clear();
-            foreach (var i in m_Components)
-            {
-                var type = i.GetType();
-                List<CmsComponent> list;
-                if (!m_ComponentsCache.TryGetValue(type, out list))
-                {
-                    list = new();
-                    m_ComponentsCache[type] = list;
-                }
-                list.Add(i);
-            }
-        }
-
-        public static CmsEntityBuilder Create()
-        {
-            return new CmsEntityBuilder();
-        }
-
-        private List<CmsComponent> GetListForComponentOfType(Type type)
-        {
-            List<CmsComponent> list;
-            if (!m_ComponentsCache.TryGetValue(type, out list))
-            {
-                list = m_Components.Where(i => type.IsAssignableFrom(i.GetType())).ToList();
-                m_ComponentsCache[type] = list;
-            }
-            return list;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public CmsComponent GetComponent(Type type)
-        {
-            var list = GetListForComponentOfType(type);
-            return list.Count == 0 ? null : list.First();
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public bool HasComponent(Type type)
-        {
-            var list = GetListForComponentOfType(type);
-            return list.Count > 0;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public List<CmsComponent> GetAllComponentsOfType(Type type)
-        {
-            return new(GetListForComponentOfType(type));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public T GetComponent<T>() where T : CmsComponent
-        {
-            return GetComponent(typeof(T)) as T;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public bool HasComponent<T>() where T : CmsComponent
-        {
-            return HasComponent(typeof(T));
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public List<T> GetAllComponentsOfType<T>() where T : CmsComponent
-        {
-            return GetAllComponentsOfType(typeof(T)).Cast<T>().ToList();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public bool TryGetComponent(Type type, out CmsComponent component)
-        {
-            var list = GetListForComponentOfType(type);
-            if (list.Count > 0)
-            {
-                component = list.First();
-                return true;
-            }
-            component = null;
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]    
-        public bool TryGetComponent<T>(out T component) where T : CmsComponent
+        public void EnsureCacheForType<T>() where T : ICmsComponent
         {
             var type = typeof(T);
-            var list = GetListForComponentOfType(type);
-            if (list.Count > 0)
+            ref var data = ref Cms.Instance.entities.buffer[id];
+            if (data.cacheDic.ContainsKey(type))
             {
-                component = (T)list.First();
-                return true;
+                return;
             }
-            component = null;
-            return false;
+            List<ushort> componentIndexCacheList = new();
+            List<T> componentCacheList = new();
+            for (ushort i = 0; i < data.components.Length; i++)
+            {
+                ref var componentData = ref data.components[i];
+                if (type.IsAssignableFrom(componentData.GetType()))
+                {
+                    componentIndexCacheList.Add(i);
+                    componentCacheList.Add((T)componentData);
+                }
+            }
+            data.cacheDic[type] = new CmsComponentCachePool<T>()
+            {
+                components = componentCacheList.ToArray(),
+                index = componentIndexCacheList.ToArray()
+            };
+        }
+
+        public CmsComponentCachePool<T> GetCachePoolForType<T>() where T : ICmsComponent
+        {
+            EnsureCacheForType<T>();
+            return (CmsComponentCachePool<T>)Cms.Instance.entities.buffer[id].cacheDic[typeof(T)];       
+        } 
+
+        public ref T GetComponent<T>() where T : ICmsComponent
+        {
+            return ref GetCachePoolForType<T>().components[0];
+        }
+        public bool HasComponent<T>() where T : ICmsComponent
+        {
+            return GetCachePoolForType<T>().components.Length > 0;
+        }
+        public T[] GetCmsComponentsOfType<T>() where T : ICmsComponent
+        {
+            return GetCachePoolForType<T>().components;
         }
     }
 
-    [Serializable]
-    public class CmsComponent
+    public class Cms : SingletonLite<Cms>
     {
-        
-    }
+        public Array16<CmsEntityData> entities;
+        public Dictionary<string, ushort> entitiesDic;
 
-    public static class Cms
-    {
-        private static Dictionary<string, CmsEntity> s_Entities = new();
-        
+        public Cms()
+        {
+            _Reset();
+        }
+
+        public void _Reset()
+        {
+            entities = new(ushort.MaxValue);
+            entities.CreateItem(out _);
+
+            entitiesDic = new();
+        }
+
+        public static void Reset()
+        {
+            Instance._Reset();
+        }
+
         public static void LoadAll(string root)
         {
-            s_Entities = new();
             var list = Resources.
                 LoadAll<CmsEntityPfb>(root).
-                Select(i => i.AsCmsEntity()).
                 ToList();
             StringBuilder sb = new();
             sb.Append($"Loaded {list.Count} entities: ");
             for (int i = 0; i < list.Count; i++)
             {
                 var ent = list[i];
-                s_Entities[ent.Id] = ent;
-                sb.Append(ent.Id);
+                
+                if (Instance.entitiesDic.ContainsKey(ent.id))
+                {
+                    QDebugBase<InternalLogChannel>.Warn(InternalLogChannel.System, $"Found entities with the same string ids: {ent.id}");
+                    continue;
+                }
+
+                Instance.entities.CreateItem(out var valId);
+                Instance.entities.buffer[valId].Setup(ent.id, ent.components);
+                Instance.entitiesDic[ent.id] = valId;
+
+                sb.Append(ent.id);
                 if (i < list.Count - 1)
                 {
                     sb.Append(", ");
@@ -219,21 +163,24 @@ namespace Blaze.Runtime.Cms
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CmsEntity GetEntity(string id)
+        public static CmsEntity GetEntity(string stringId)
         {
-            return s_Entities.TryGetValue(id, out var i) ? i : null;
+            return new(Instance.entitiesDic[stringId]);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Clear()
+        public static bool HasEntity(string stringId)
         {
-            s_Entities.Clear();
+            return Instance.entitiesDic.ContainsKey(stringId);            
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Push(CmsEntity cmsEntity)
+        public static bool TryGetEntity(out CmsEntity cmsEntity, string stringId)
         {
-            s_Entities[cmsEntity.Id] = cmsEntity;
+            cmsEntity = new();
+            if (Instance.entitiesDic.TryGetValue(stringId, out cmsEntity.id))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

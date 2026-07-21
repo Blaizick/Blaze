@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Blaze.Runtime;
+using Blaze.Runtime.Cms;
 using Blaze.Runtime.DependencyInjection;
 using Blaze.Runtime.Tweening;
 using Blaze.Runtime.Ui;
@@ -29,6 +30,9 @@ namespace Blaze.Test
             QDebugBase<InternalLogChannel>.Verbose = true;
             QDebugBase<InternalLogChannel>.EnableChannels(InternalLogChannel.All);
 
+            Cms.LoadAll("Content");
+            // Debug.
+
             QStartCoroutine(Coroutine());
             QStartCoroutine(Coroutine2());
 
@@ -39,6 +43,9 @@ namespace Blaze.Test
 
             Debug.Log(object2.a);
             Debug.Log(monoObject2);
+
+            Debug.Log(Content.CmsEntity1.GetComponent<CmsComponent1>()._int);
+            Debug.Log(Content.CmsEntity1.GetComponent<CmsComponent2>().cmsEntity.AsCmsEntity().GetComponent<CmsComponent1>()._string);
 
             // this.QStartCoroutine(Coroutine2());
             // this.QStartCoroutine(Coroutine());
@@ -84,5 +91,18 @@ namespace Blaze.Test
         {
             yield break;
         }
+    }
+
+    [Serializable]
+    public struct CmsComponent1 : ICmsComponent
+    {
+        public int _int;
+        public string _string;
+    }
+
+    [Serializable]
+    public struct CmsComponent2 : ICmsComponent
+    {
+        public CmsEntityPfb cmsEntity;
     }
 }

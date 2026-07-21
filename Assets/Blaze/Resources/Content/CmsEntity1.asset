@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfe606e5d83f1d442a63d9c065965568, type: 3}
+  m_Name: CmsEntity1
+  m_EditorClassIdentifier: Blaze.Runtime::Blaze.Runtime.Cms.CmsEntityPfb
+  id: Content/CmsEntity1
+  components:
+  - rid: 858555249054187580
+  - rid: 858555249054187581
+  references:
+    version: 2
+    RefIds:
+    - rid: 858555249054187580
+      type: {class: CmsComponent1, ns: Blaze.Test, asm: Assembly-CSharp}
+      data:
+        _int: 421
+        _string: awdada
+    - rid: 858555249054187581
+      type: {class: CmsComponent2, ns: Blaze.Test, asm: Assembly-CSharp}
+      data:
+        cmsEntity: {fileID: 11400000, guid: 9410faedfa810e44dbd9331d508a1395, type: 2}
