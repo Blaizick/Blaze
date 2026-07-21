@@ -1,6 +1,7 @@
+using System;
 using System.Collections;
-using System.Xml.Schema;
 using Blaze.Runtime;
+using Blaze.Runtime.DependencyInjection;
 using Blaze.Runtime.Tweening;
 using Blaze.Runtime.Ui;
 using UnityEngine;
@@ -14,6 +15,15 @@ namespace Blaze.Test
         public TextScreen textScreen;
         public Blaze.Runtime.World.BlazeGrid grid;
 
+        [QInject, NonSerialized]
+        public MonoObject2 monoObject2;
+        [QInject, NonSerialized]
+        public Object2 object2;
+        [QInject, NonSerialized]
+        public QDiContainer container;
+
+        public GameObject prefab;
+
         public void Awake()
         {
             QDebugBase<InternalLogChannel>.Verbose = true;
@@ -21,6 +31,14 @@ namespace Blaze.Test
 
             QStartCoroutine(Coroutine());
             QStartCoroutine(Coroutine2());
+
+            var inst1 = container.InstantiatePrefab(prefab);
+            var inst2 = container.InstantiatePrefabForComponent<MonoObject2>(prefab);
+            Debug.Log(inst1);
+            Debug.Log(inst2);
+
+            Debug.Log(object2.a);
+            Debug.Log(monoObject2);
 
             // this.QStartCoroutine(Coroutine2());
             // this.QStartCoroutine(Coroutine());
