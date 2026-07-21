@@ -433,25 +433,25 @@ namespace Blaze.Runtime.Tweening
             return Animate(ref settings, duration, target, AnimationType.Custom, structType, ref shakeSettings);
         }
         
-        public static QTween Custom(float startValue, float endValue, float duration, UnityAction<float> onValueChange, object target)
+        public static QTween Custom(float startValue, float endValue, float duration, UnityAction<float> onValueChange)
         {
-            return Custom(startValue, endValue, duration, onValueChange, target, StructType.Float);
+            return Custom(startValue, endValue, duration, onValueChange, null, StructType.Float);
         }
-        public static QTween Custom(Vector2 startValue, Vector2 endValue, float duration, UnityAction<Vector2> onValueChange, object target)
+        public static QTween Custom(Vector2 startValue, Vector2 endValue, float duration, UnityAction<Vector2> onValueChange)
         {
-            return Custom(startValue, endValue, duration, onValueChange, target, StructType.Vector2);
+            return Custom(startValue, endValue, duration, onValueChange, null, StructType.Vector2);
         }
-        public static QTween Custom(Vector3 startValue, Vector3 endValue, float duration, UnityAction<Vector3> onValueChange, object target)
+        public static QTween Custom(Vector3 startValue, Vector3 endValue, float duration, UnityAction<Vector3> onValueChange)
         {
-            return Custom(startValue, endValue, duration, onValueChange, target, StructType.Vector3);
+            return Custom(startValue, endValue, duration, onValueChange, null, StructType.Vector3);
         }
-        public static QTween Custom(Vector4 startValue, Vector4 endValue, float duration, UnityAction<Vector4> onValueChange, object target)
+        public static QTween Custom(Vector4 startValue, Vector4 endValue, float duration, UnityAction<Vector4> onValueChange)
         {
-            return Custom(startValue, endValue, duration, onValueChange, target, StructType.Vector4);
+            return Custom(startValue, endValue, duration, onValueChange, null, StructType.Vector4);
         }
-        public static QTween Custom(Color startValue, Color endValue, float duration, UnityAction<Color> onValueChange, object target)
+        public static QTween Custom(Color startValue, Color endValue, float duration, UnityAction<Color> onValueChange)
         {
-            return Custom(startValue, endValue, duration, onValueChange, target, StructType.Color);
+            return Custom(startValue, endValue, duration, onValueChange, null, StructType.Color);
         }
 
         public static QTween Position(Transform transform, Vector3 startValue, Vector3 endValue, float duration)
