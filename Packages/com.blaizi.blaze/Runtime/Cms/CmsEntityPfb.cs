@@ -103,11 +103,11 @@ namespace Blaze.Runtime.Cms
         {
             return GetCachePoolForType<T>().components.Length > 0;
         }
-        public T[] GetCmsComponentsOfType<T>() where T : ICmsComponent
+        public T[] GetComponentsOfType<T>() where T : ICmsComponent
         {
             return GetCachePoolForType<T>().components;
         }
-        
+
         public bool Alive
         {
             get
