@@ -107,6 +107,14 @@ namespace Blaze.Runtime.Cms
         {
             return GetCachePoolForType<T>().components;
         }
+        
+        public bool Alive
+        {
+            get
+            {
+                return Cms.Instance.entities.buffer[id].created;
+            }
+        }
     }
 
     public class Cms : SingletonLite<Cms>
