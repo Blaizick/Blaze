@@ -281,6 +281,13 @@ namespace Blaze.Runtime.Tweening
         TransformPunchLocalScale,
         TransformPunchLocalRotation,
         CanvasGroupAlpha,
+        RectTransformAnchoredPosition,
+        RectTransformSizeDelta,
+        RectTransformAnchorMin,
+        RectTransformAnchorMax,
+        RectTransformPivot,
+        RectTransformPunchAnchoredPosition,
+        RectTransformPunchSizeDelta,
     }
 
     public struct QTween
@@ -482,6 +489,34 @@ namespace Blaze.Runtime.Tweening
         {
             return AnimatePunch(transform.localPosition, punch, duration, vibrato, transform, AnimationType.TransformPunchLocalRotation);
         }
+        public static QTween AnchoredPosition(RectTransform rectTransform, Vector2 startValue, Vector2 endValue, float duration)
+        {
+            return Animate(startValue, endValue, duration, rectTransform, AnimationType.RectTransformAnchoredPosition, StructType.Vector2);
+        }
+        public static QTween SizeDelta(RectTransform rectTransform, Vector2 startValue, Vector2 endValue, float duration)
+        {
+            return Animate(startValue, endValue, duration, rectTransform, AnimationType.RectTransformSizeDelta, StructType.Vector2);
+        }
+        public static QTween AnchorMin(RectTransform rectTransform, Vector2 startValue, Vector2 endValue, float duration)
+        {
+            return Animate(startValue, endValue, duration, rectTransform, AnimationType.RectTransformAnchorMin, StructType.Vector2);
+        }
+        public static QTween AnchorMax(RectTransform rectTransform, Vector2 startValue, Vector2 endValue, float duration)
+        {
+            return Animate(startValue, endValue, duration, rectTransform, AnimationType.RectTransformAnchorMax, StructType.Vector2);
+        }
+        public static QTween Pivot(RectTransform rectTransform, Vector2 startValue, Vector2 endValue, float duration)
+        {
+            return Animate(startValue, endValue, duration, rectTransform, AnimationType.RectTransformPivot, StructType.Vector2);
+        }
+        public static QTween PunchAnchoredPosition(RectTransform rectTransform, Vector2 punch, float duration, int vibrato = 3)
+        {
+            return AnimatePunch(rectTransform.anchoredPosition, punch, duration, vibrato, rectTransform, AnimationType.RectTransformPunchAnchoredPosition);
+        }
+        public static QTween PunchSizeDelta(RectTransform rectTransform, Vector2 punch, float duration, int vibrato = 3)
+        {
+            return AnimatePunch(rectTransform.sizeDelta, punch, duration, vibrato, rectTransform, AnimationType.RectTransformPunchSizeDelta);
+        }
     }
 
 	[AddComponentMenu("")]
@@ -603,7 +638,20 @@ namespace Blaze.Runtime.Tweening
                     var v2Val = Vector2.LerpUnclamped(v2Settings.startValue, v2Settings.endValue, t);
                     switch (data.animationType)
                     {
-                        case AnimationType.Default:
+                        case AnimationType.RectTransformAnchoredPosition:
+                            ((RectTransform)data.target).anchoredPosition = v2Val;
+                            break;
+                        case AnimationType.RectTransformSizeDelta:
+                            ((RectTransform)data.target).sizeDelta = v2Val;
+                            break;
+                        case AnimationType.RectTransformAnchorMin:
+                            ((RectTransform)data.target).anchorMin = v2Val;
+                            break;
+                        case AnimationType.RectTransformAnchorMax:
+                            ((RectTransform)data.target).anchorMax = v2Val;
+                            break;
+                        case AnimationType.RectTransformPivot:
+                            ((RectTransform)data.target).pivot = v2Val;
                             break;
                     }
                     if (v2Settings.onValueChange != null)
@@ -646,6 +694,12 @@ namespace Blaze.Runtime.Tweening
                             break;
                         case AnimationType.TransformPunchLocalRotation:
                             ((Transform)data.target).localRotation = Quaternion.Euler(v3Val);
+                            break;
+                        case AnimationType.RectTransformPunchAnchoredPosition:
+                            ((RectTransform)data.target).anchoredPosition = v3Val;
+                            break;
+                        case AnimationType.RectTransformSizeDelta:
+                            ((RectTransform)data.target).sizeDelta = v3Val;
                             break;
                     }
                     if (v3Settings.onValueChange != null)

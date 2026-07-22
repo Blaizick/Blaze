@@ -13,6 +13,10 @@ namespace Blaze.Runtime
 				}
 				return SingletonLite<T>.s_Instance;
 			}
+			set
+			{
+				s_Instance = value;
+			}
 		}
 
 		public static bool Exists

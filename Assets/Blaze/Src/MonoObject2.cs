@@ -4,7 +4,12 @@ using Blaze.Runtime.DependencyInjection;
 
 namespace Blaze.Test
 {
-    public class MonoObject2 : ManagedBehaviour
+    public interface IMonoObject
+    {
+        
+    }
+
+    public class MonoObject2 : ManagedBehaviour, IMonoObject
     {
         [QInject, NonSerialized]
         public Object2 object2;

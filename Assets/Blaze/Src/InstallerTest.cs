@@ -1,5 +1,3 @@
-
-
 using Blaze.Runtime;
 using Blaze.Runtime.DependencyInjection;
 
@@ -9,11 +7,11 @@ namespace Blaze.Test
     {
         public override void InstallBindings()
         {
-            QDebugBase<InternalLogChannel>.VerboseLog(InternalLogChannel.System, "Installing bindings", gameObject);
+            QDebugBase<InternalLogChannel>.VerboseLog(InternalLogChannel.System, "Installing bindings");
 
-            Container.Bind<ImpsTest>().FromInstance(Singleton<ImpsTest>.Instance);
-            Container.Bind<MonoObject2>().FromInstance(Singleton<MonoObject2>.Instance);
-            Container.Bind<Object2>().AsSingle();
+            Container.Bind<ImpsTest>().FromComponentInHierarchy().AsSingle();
+            Container.Bind<IMonoObject>().To<MonoObject2>().FromComponentInHierarchy().AsSingle();
+            Container.Bind<Object2>().FromNew().AsSingle();
         }
     }
 }

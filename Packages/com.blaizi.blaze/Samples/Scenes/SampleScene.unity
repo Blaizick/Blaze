@@ -460,7 +460,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05605270f8db27b4da1e1dca7ca469d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blaze.Runtime::Blaze.Runtime.DependencyInjection.QSceneContext
-  monoInstallers:
+  m_MonoInstallers:
   - {fileID: 548220596}
 --- !u!114 &548220596
 MonoBehaviour:

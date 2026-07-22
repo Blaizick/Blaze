@@ -122,6 +122,12 @@ namespace Blaze.Runtime.Cms
         public Array16<CmsEntityData> entities;
         public Dictionary<string, ushort> entitiesDic;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void BeforeSceneLoad()
+        {
+            Instance = new();
+        }
+
         public Cms()
         {
             _Reset();

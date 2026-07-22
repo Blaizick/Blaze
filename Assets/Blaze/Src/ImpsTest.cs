@@ -17,7 +17,7 @@ namespace Blaze.Test
         public Blaze.Runtime.World.BlazeGrid grid;
 
         [QInject, NonSerialized]
-        public MonoObject2 monoObject2;
+        public IMonoObject monoObject2;
         [QInject, NonSerialized]
         public Object2 object2;
         [QInject, NonSerialized]
